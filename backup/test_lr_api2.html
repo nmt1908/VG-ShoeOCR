@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Shoe LR API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        .result { margin-top: 2em; }
+        img { max-width: 400px; border: 1px solid #ccc; margin-top: 1em; }
+        .info { margin-top: 1em; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h2>Test Shoe Left/Right API</h2>
+    <div id="drop-area" style="border:2px dashed #2563eb;padding:32px;text-align:center;border-radius:12px;max-width:420px;margin-bottom:18px;cursor:pointer;">
+        <p style="color:#2563eb;font-size:18px;font-weight:500;">Kéo và thả ảnh vào đây hoặc bấm để chọn ảnh</p>
+        <input type="file" id="imageInput" accept="image/*" style="display:none">
+        <div id="preview" style="margin-top:12px;"></div>
+    </div>
+    <div class="result" id="result"></div>
+    <script>
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('imageInput');
+    const previewDiv = document.getElementById('preview');
+    const resultDiv = document.getElementById('result');
+    let currentFile = null;
+
+    // Drag & drop handlers
+    dropArea.addEventListener('click', () => fileInput.click());
+    dropArea.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropArea.style.background = '#e0e7ef';
+    });
+    dropArea.addEventListener('dragleave', e => {
+        e.preventDefault();
+        dropArea.style.background = '';
+    });
+    dropArea.addEventListener('drop', e => {
+        e.preventDefault();
+        dropArea.style.background = '';
+        if (e.dataTransfer.files && e.dataTransfer.files.length) {
+            handleFile(e.dataTransfer.files[0]);
+        }
+    });
+    fileInput.addEventListener('change', e => {
+        if (fileInput.files && fileInput.files.length) {
+            handleFile(fileInput.files[0]);
+        }
+    });
+
+    function handleFile(file) {
+        if (!file) return;
+        currentFile = file;
+        // Preview
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            previewDiv.innerHTML = `<img src="${ev.target.result}" style="max-width:320px;max-height:220px;border-radius:8px;border:1.5px solid #2563eb;">`;
+        };
+        reader.readAsDataURL(file);
+        // Auto analyze
+        analyzeFile(file);
+    }
+
+    async function analyzeFile(file) {
+        resultDiv.innerHTML = "Processing...";
+        const formData = new FormData();
+        formData.append('image', file);
+        try {
+            const response = await fetch('http://127.0.0.1:8000/analyze', {
+                method: 'POST',
+                body: formData
+            });
+            if (!response.ok) {
+                let errMsg = '';
+                try {
+                    const err = await response.json();
+                    errMsg = err.error || response.statusText;
+                } catch (jsonErr) {
+                    errMsg = `HTTP ${response.status}: ${response.statusText}`;
+                }
+                resultDiv.innerHTML = `<span class='error'>Error: ${errMsg}</span>`;
+                return;
+            }
+            const data = await response.json();
+            let html = `<div class="info"><b>Side:</b> ${data.side === "L" ? "Left" : "Right"}</div>`;
+            if (data.removed_base64) {
+                html += `<div class="info"><b>Removed Background Image:</b><br>
+                    <img src="data:image/png;base64,${data.removed_base64}" alt="Removed BG" style="max-width:340px;border-radius:8px;"></div>`;
+            }
+            resultDiv.innerHTML = html;
+        } catch (err) {
+            resultDiv.innerHTML = `<span class='error'>Error: ${err}</span>`;
+        }
+    }
+    </script>
+</body>
+</html>

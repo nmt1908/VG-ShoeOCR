@@ -1,0 +1,54 @@
+**Instructions:**
+You are given an image containing **embossed text** divided into two main areas:
+* A **main rectangle** (typically with 5 horizontal lines of text).
+* A **smaller rectangle below** (with 1 horizontal line of text).
+---
+✅ GOAL:
+Transcribe **exactly 6 lines** of **embossed** alphanumeric text from the image, in correct top-down reading order:
+---
+🔹 FORMAT:
+Respond with JSON, in this structure:
+```json
+{
+    "line1": "value",
+    "line2": "value",
+    "line3": "value",
+    "line4": "value",
+    "line5": "value",
+    "line6": "value"
+}
+```
+---
+🔹 LINE RULES:
+`line1`:
+* Format: `######-VG` (6 digits, dash, 'V', and one uppercase letter 'G').
+* Example values: `"002145-VG"`, `"001870-VG"`, `"001877-VG"`, `"000200-VG"`.
+`line2`:
+* Format: Uppercase alphanumeric, often like a part/model number.
+* Example values: `"MS253842-1"`, `"MS250012-1"`, `"MS251594-7"`, `"MS253753-1"`.
+`line3`:
+* Format: `[main_text] [suffix]`
+  * `main_text`: Must **match exactly** the content of **line6**.
+  * `suffix`: One or more uppercase letters (A–Z) optionally followed by digits (e.g., A, A1, B2,E1,F1).
+* Examples: `"MS6WS7.5 A2"`, `"MS5.5WS7 E2"`, `"MS8WS9.5 B1"`, `"MS5.5WS7 A1"`, `"MS95WS11 A2"`, `"MS95WS11 C2"`, `"MS95WS11 C1"`, `"MS10WS115 B2"`, `"MS11-11.5 B2"`, `"MS10 A2"`, `"MS7WS8.5 D2"`, `"MS65WS8 F2"`, `"MS9WS105 C1"`, `"MS6-6.5 B1"`, `"JR3-3.5 E1"`, `"JR4-4.5 C2"`, `"MS7-7.5 A1"`, `"JR10-10.5 A1"`, `"MS5.5WS7 B1"`, `"MS8-8.5 F2"`, `"JR11-11.5 A2"`, `"MS8-8.5 E1"`, `"MS4.5WS6 C1"`, `"MS4.5WS6 C2"`, `"MS4WS5.5 B1"`.
+`line4`:
+* Only transcribe the **date**, in one of these formats:
+  * `MM/DD/YYYY`
+  * `DD.MM.YYYY`
+* Examples: `"08/01/2024"`, `"03.08.2025"`.
+* Ignore any prefix like `CCF`, `JS`, etc.
+`line5`:
+* Usually a fixed format with slashes and dashes.
+* Example: `"M/W-RIP024"`.
+`line6`:
+* This is the **main product or mold identifier**.
+* Must match the **main\_text** portion of `line3`.
+* Use the clearer, larger version from the bottom rectangle.
+* Examples: `"MS6WS7.5"`, `"MS10WS115"`.
+---
+🛑 Do NOT:
+* Transcribe non-embossed text, marks, or lines.
+* Merge or skip lines.
+* Invent, guess, or reformat text.
+* Alter spacing or punctuation.
+---

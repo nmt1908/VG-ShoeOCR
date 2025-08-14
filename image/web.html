@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Uploaded Images</title>
+</head>
+<body>
+  <h1>Uploaded Images</h1>
+  <div id="images"></div>
+  <script>
+    fetch('http://10.13.34.180:1908/images')
+      .then(res => res.json())
+      .then(images => {
+        const div = document.getElementById('images');
+        images.forEach(url => {
+          const img = document.createElement('img');
+          img.src = 'http://10.13.34.180:1908' + url;
+          img.style.width = '200px';
+          img.style.margin = '10px';
+          div.appendChild(img);
+        });
+      });
+  </script>
+</body>
+</html>
