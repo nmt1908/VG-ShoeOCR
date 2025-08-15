@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 from rembg import remove
 import psycopg2
+import math
 import requests  # Đảm bảo đã import requests
 from werkzeug.utils import secure_filename
 from flask_socketio import SocketIO, emit
@@ -128,22 +129,22 @@ def crop_image():
         cropped = img.crop((x, y, x + w, y + h))
 
         # 🔹 Giới hạn chiều cao tối đa 320px
-        max_h = 250
-        if cropped.height > max_h:
-            cropped = cropped.crop((0, 0, cropped.width, max_h))
+        # max_h = 250
+        # if cropped.height > max_h:
+        #     cropped = cropped.crop((0, 0, cropped.width, max_h))
 
-        cropped_np = np.array(cropped)
-
-        if cropped_np.ndim == 3:
-            gray = cv2.cvtColor(cropped_np, cv2.COLOR_RGB2GRAY)
-        else:
-            gray = cropped_np
-         # Convert PIL image to numpy array
         # cropped_np = np.array(cropped)
+
         # if cropped_np.ndim == 3:
         #     gray = cv2.cvtColor(cropped_np, cv2.COLOR_RGB2GRAY)
         # else:
         #     gray = cropped_np
+         # Convert PIL image to numpy array
+        cropped_np = np.array(cropped)
+        if cropped_np.ndim == 3:
+            gray = cv2.cvtColor(cropped_np, cv2.COLOR_RGB2GRAY)
+        else:
+            gray = cropped_np
         # Sử dụng CLAHE để cải thiện độ tương phản
         clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
         enhanced = clahe.apply(gray)
@@ -1028,6 +1029,110 @@ def rotate_image():
 
     except Exception as e:
         return jsonify({'error': 'Rotate failed', 'details': str(e)}), 500
+def order_points_clockwise(pts):
+    pts = np.array(pts)
+    s = pts.sum(axis=1)
+    diff = np.diff(pts, axis=1).ravel()
+    tl = pts[np.argmin(s)]
+    br = pts[np.argmax(s)]
+    tr = pts[np.argmin(diff)]
+    bl = pts[np.argmax(diff)]
+    return [tuple(p) for p in [tl, tr, br, bl]]  # A=TL, B=TR, C=BR, D=BL
+
+def find_tag_corners(img, canny1=160, canny2=255, min_w=200, min_h=150, blur_type="Gaussian", blur_ksize=11, bilat_d=9, bilat_sigmaColor=75, bilat_sigmaSpace=75, dilate_iter=2, erode_iter=1):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    if blur_type != "None":
+        k = max(1, blur_ksize)
+        if k % 2 == 0: k += 1
+        if blur_type == "Gaussian" and k > 1:
+            gray = cv2.GaussianBlur(gray, (k,k), 0)
+        elif blur_type == "Median" and k > 1:
+            gray = cv2.medianBlur(gray, k)
+        elif blur_type == "Bilateral":
+            gray = cv2.bilateralFilter(gray, bilat_d, bilat_sigmaColor, bilat_sigmaSpace)
+    edges = cv2.Canny(gray, canny1, canny2, apertureSize=3)
+    if dilate_iter or erode_iter:
+        kernel = np.ones((3,3), np.uint8)
+        if dilate_iter:
+            edges = cv2.dilate(edges, kernel, iterations=dilate_iter)
+        if erode_iter:
+            edges = cv2.erode(edges, kernel, iterations=erode_iter)
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    best = None
+    best_area = 0
+    for cnt in contours:
+        if len(cnt) < 5:
+            continue
+        rect = cv2.minAreaRect(cnt)
+        (_, _), (w, h), _ = rect
+        w, h = max(w, h), min(w, h)
+        if w < min_w or h < min_h:
+            continue
+        area = w * h
+        if area > best_area:
+            best_area = area
+            box = cv2.boxPoints(rect)
+            best = np.int32(box)
+    corner_labels = None
+    angle_deg = None
+    if best is not None:
+        ordered = order_points_clockwise(best)
+        labels = ['A','B','C','D']
+        (ax, ay), (bx, by) = ordered[0], ordered[1]
+        angle_deg = math.degrees(math.atan2(by - ay, bx - ax))
+        corner_labels = dict(zip(labels, ordered))
+    return corner_labels, angle_deg
+
+def warp_rectangle(img, corners_dict):
+    if not corners_dict:
+        return None
+    A = np.float32(corners_dict['A'])
+    B = np.float32(corners_dict['B'])
+    C = np.float32(corners_dict['C'])
+    D = np.float32(corners_dict['D'])
+    w1 = np.linalg.norm(B - A)
+    w2 = np.linalg.norm(C - D)
+    h1 = np.linalg.norm(D - A)
+    h2 = np.linalg.norm(C - B)
+    width = int(round(max(w1, w2)))
+    height = int(round(max(h1, h2)))
+    if width <= 0 or height <= 0:
+        return None
+    src = np.array([A, B, C, D], dtype=np.float32)
+    dst = np.array([[0,0],[width-1,0],[width-1,height-1],[0,height-1]], dtype=np.float32)
+    M = cv2.getPerspectiveTransform(src, dst)
+    warped = cv2.warpPerspective(img, M, (width, height), flags=cv2.INTER_LINEAR)
+    return warped
+
+def apply_clahe(bgr, clip=2.0, grid=8):
+    lab = cv2.cvtColor(bgr, cv2.COLOR_BGR2LAB)
+    l,a,b = cv2.split(lab)
+    clahe = cv2.createCLAHE(clipLimit=clip, tileGridSize=(grid,grid))
+    l2 = clahe.apply(l)
+    lab2 = cv2.merge([l2,a,b])
+    return cv2.cvtColor(lab2, cv2.COLOR_LAB2BGR)
+
+@app.route('/rotate2', methods=['POST'])
+def rotate_api():
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image uploaded'}), 400
+    file = request.files['image']
+    in_bytes = file.read()
+    npimg = np.frombuffer(in_bytes, np.uint8)
+    img = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+    # áp dụng CLAHE trước khi detect
+    img = apply_clahe(img)
+    corners, angle_deg = find_tag_corners(img)
+    if not corners:
+        return jsonify({'error': 'No rectangle detected'}), 400
+    warped = warp_rectangle(img, corners)
+    if warped is None:
+        return jsonify({'error': 'Warp failed'}), 500
+    buf = io.BytesIO()
+    Image.fromarray(cv2.cvtColor(warped, cv2.COLOR_BGR2RGB)).save(buf, format="PNG")
+    buf.seek(0)
+    return send_file(buf, mimetype='image/png')
+
 if __name__ == '__main__':
     # --- Chạy bằng socketio thay vì app.run ---
     # delete_thread = threading.Thread(
