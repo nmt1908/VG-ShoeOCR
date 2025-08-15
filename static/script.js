@@ -26,6 +26,7 @@ let lastSideResult = null;
 // --- Thêm biến lưu yellow text ---
 let lastYellowText = null;
 let lastYellowImgUrl = null;
+const autoRotateCheckbox = document.getElementById('auto-rotate-checkbox');
 
 document.addEventListener('dragover', function (e) {
     e.preventDefault();
@@ -441,6 +442,74 @@ async function runEmbossedDetectWithColor(colorDesc) {
             msg.textContent = `No "${colorDesc}" text in this image`;
             lastYellowText = null;
         }
+        // if (colorBoxObj) {
+        //     let box = colorBoxObj.box;
+        //     let xmin = Math.max(0, box[0]);
+        //     let ymin = Math.max(0, box[1]);
+        //     let xmax = Math.min(imgNaturalWidth, box[2]);
+        //     let ymax = Math.min(imgNaturalHeight, box[3]);
+
+        //     // Xóa thông báo nếu có
+        //     let msg = document.getElementById('no-yellow-text-msg');
+        //     if (msg && msg.parentNode) {
+        //         msg.parentNode.removeChild(msg);
+        //     }
+
+        //     // Crop từ ảnh gốc
+        //     const cropW = Math.round(xmax - xmin);
+        //     const cropH = Math.round(ymax - ymin);
+        //     const tempCanvas = document.createElement('canvas');
+        //     tempCanvas.width = cropW;
+        //     tempCanvas.height = cropH;
+        //     const tempCtx = tempCanvas.getContext('2d');
+        //     tempCtx.drawImage(img, xmin, ymin, cropW, cropH, 0, 0, cropW, cropH);
+
+        //     // Hiển thị ảnh crop
+        //     tempCanvas.toBlob(blob => {
+        //         let orangeImg = document.getElementById('orange-text-crop-img');
+        //         if (!orangeImg) {
+        //             orangeImg = document.createElement('img');
+        //             orangeImg.id = 'orange-text-crop-img';
+        //             orangeImg.style.maxWidth = '98%';
+        //             orangeImg.style.maxHeight = '180px';
+        //             orangeImg.style.width = 'auto';
+        //             orangeImg.style.height = 'auto';
+        //             orangeImg.style.borderRadius = '10px';
+        //             orangeImg.style.marginTop = '10px';
+        //             orangeImg.style.boxShadow = '0 2px 12px rgba(251,146,60,0.13)';
+        //             if (resultDiv.nextSibling) {
+        //                 resultDiv.parentNode.insertBefore(orangeImg, resultDiv.nextSibling);
+        //             } else {
+        //                 resultDiv.parentNode.appendChild(orangeImg);
+        //             }
+        //         }
+        //         orangeImg.src = URL.createObjectURL(blob);
+        //     }, 'image/png');
+
+        // } else {
+        //     // Không có box -> xóa ảnh cũ + hiện thông báo
+        //     let orangeImg = document.getElementById('orange-text-crop-img');
+        //     if (orangeImg && orangeImg.parentNode) {
+        //         orangeImg.parentNode.removeChild(orangeImg);
+        //     }
+        //     let msg = document.getElementById('no-yellow-text-msg');
+        //     if (!msg) {
+        //         msg = document.createElement('div');
+        //         msg.id = 'no-yellow-text-msg';
+        //         msg.style.color = '#ef4444';
+        //         msg.style.fontWeight = 'bold';
+        //         msg.style.fontSize = '23px';
+        //         msg.style.marginTop = '20px';
+        //         msg.style.marginBottom = '10px';
+        //         if (resultDiv.nextSibling) {
+        //             resultDiv.parentNode.insertBefore(msg, resultDiv.nextSibling);
+        //         } else {
+        //             resultDiv.parentNode.appendChild(msg);
+        //         }
+        //     }
+        //     msg.textContent = `No "${colorDesc}" text in this image`;
+        // }
+
         // Vẽ lại canvas với ROI mới
         draw();
         setTimeout(() => {
@@ -1616,84 +1685,144 @@ async function visibleText(blob) {
 let currentRotatableBlob = null;
 
 // Sau khi nhận ảnh crop từ API Python, gọi hàm này để OCR
-function handleCropAndOCR(blob) {
-    // Show cropped image larger
-    const leftBtn = document.getElementById('rotate-left');
-    const rightBtn = document.getElementById('rotate-right');
+// function handleCropAndOCR(blob) {
+//     // Show cropped image larger
+//     const leftBtn = document.getElementById('rotate-left');
+//     const rightBtn = document.getElementById('rotate-right');
 
-    resultDiv.innerHTML = '';
-    if (leftBtn) resultDiv.appendChild(leftBtn);
-    if (rightBtn) resultDiv.appendChild(rightBtn);
+//     resultDiv.innerHTML = '';
+//     if (leftBtn) resultDiv.appendChild(leftBtn);
+//     if (rightBtn) resultDiv.appendChild(rightBtn);
 
-    const croppedImg = new Image();
-    croppedImg.src = URL.createObjectURL(blob);
-    croppedImg.style.maxWidth = '98%';
-    croppedImg.style.maxHeight = '600px';
-    croppedImg.style.width = 'auto';
-    croppedImg.style.height = 'auto';
-    croppedImg.style.borderRadius = '12px';
-    croppedImg.style.boxShadow = '0 2px 12px rgba(34,197,94,0.09)';
-    resultDiv.appendChild(croppedImg);
+//     const croppedImg = new Image();
+//     croppedImg.src = URL.createObjectURL(blob);
+//     croppedImg.style.maxWidth = '98%';
+//     croppedImg.style.maxHeight = '600px';
+//     croppedImg.style.width = 'auto';
+//     croppedImg.style.height = 'auto';
+//     croppedImg.style.borderRadius = '12px';
+//     croppedImg.style.boxShadow = '0 2px 12px rgba(34,197,94,0.09)';
+//     resultDiv.appendChild(croppedImg);
 
-    currentRotatableBlob = blob;
-    // Kiểm tra có ký tự dập nổi không
-    visibleText(blob).then(hasText => {
-        if (hasText) {
-            // Có ký tự, xử lý OCR như cũ
-            processCombinedOCR(blob);
-        } else {
-            // Không có ký tự, render bảng với các dòng là N/A
-            const container = document.getElementById('ocrResultsContainer');
-            const ocrPanel = document.getElementById('right-panel');
-            // 6 dòng N/A + dòng Side (nếu có)
-            let html = `
-            <div class="ocr-title" style="margin-bottom:10px;">Compare OCR Results</div>
-            <div class="ocr-result-wrapper">
-              <table class="ocr-table" style="width:100%;max-width:700px;">
-                <thead>
-                  <tr>
-                    <th class="ocr-th-stt">No.</th>
-                    <th class="ocr-th-origin">Original</th>
-                    <th class="ocr-th-fixed">Corrected (if any)</th>
-                  </tr>
-                </thead>
-                <tbody>`;
-            for (let i = 0; i < 6; ++i) {
-                html += `<tr>
-                    <td class="stt">${i + 1}</td>
-                    <td>
-                      <div class="ocr-cell ocr-origin">
-                        <input type="text" value="N/A" readonly>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="ocr-cell ocr-fixed">
-                        <input type="text" value="N/A" readonly class="fixed">
-                      </div>
-                    </td>
-                  </tr>`;
-            }
-            // Dòng Side
-            html += `<tr>
-                <td class="stt">7</td>
-                <td>
-                    <div class="ocr-cell ocr-origin">
-                        <input type="text" value="Side" readonly>
-                    </div>
-                </td>
-                <td>
-                    <div class="ocr-cell ocr-fixed">
-                        <input type="text" value="${lastSideResult !== null ? lastSideResult : ''}" readonly class="fixed">
-                    </div>
-                </td>
-            </tr>`;
-            html += `</tbody></table></div>
-            `;
-            container.innerHTML = html;
-            if (ocrPanel) ocrPanel.style.display = 'flex';
-        }
-    });
+//     currentRotatableBlob = blob;
+//     // Kiểm tra có ký tự dập nổi không
+//     visibleText(blob).then(hasText => {
+//         if (hasText) {
+//             // Có ký tự, xử lý OCR như cũ
+//             processCombinedOCR(blob);
+//         } else {
+//             // Không có ký tự, render bảng với các dòng là N/A
+//             const container = document.getElementById('ocrResultsContainer');
+//             const ocrPanel = document.getElementById('right-panel');
+//             // 6 dòng N/A + dòng Side (nếu có)
+//             let html = `
+//             <div class="ocr-title" style="margin-bottom:10px;">Compare OCR Results</div>
+//             <div class="ocr-result-wrapper">
+//               <table class="ocr-table" style="width:100%;max-width:700px;">
+//                 <thead>
+//                   <tr>
+//                     <th class="ocr-th-stt">No.</th>
+//                     <th class="ocr-th-origin">Original</th>
+//                     <th class="ocr-th-fixed">Corrected (if any)</th>
+//                   </tr>
+//                 </thead>
+//                 <tbody>`;
+//             for (let i = 0; i < 6; ++i) {
+//                 html += `<tr>
+//                     <td class="stt">${i + 1}</td>
+//                     <td>
+//                       <div class="ocr-cell ocr-origin">
+//                         <input type="text" value="N/A" readonly>
+//                       </div>
+//                     </td>
+//                     <td>
+//                       <div class="ocr-cell ocr-fixed">
+//                         <input type="text" value="N/A" readonly class="fixed">
+//                       </div>
+//                     </td>
+//                   </tr>`;
+//             }
+//             // Dòng Side
+//             html += `<tr>
+//                 <td class="stt">7</td>
+//                 <td>
+//                     <div class="ocr-cell ocr-origin">
+//                         <input type="text" value="Side" readonly>
+//                     </div>
+//                 </td>
+//                 <td>
+//                     <div class="ocr-cell ocr-fixed">
+//                         <input type="text" value="${lastSideResult !== null ? lastSideResult : ''}" readonly class="fixed">
+//                     </div>
+//                 </td>
+//             </tr>`;
+//             html += `</tbody></table></div>
+//             `;
+//             container.innerHTML = html;
+//             if (ocrPanel) ocrPanel.style.display = 'flex';
+//         }
+//     });
+// }
+async function handleCropAndOCR(croppedBlob) {
+  try {
+    // Nếu bật Auto Rotate thì xoay trước qua API; nếu không thì giữ nguyên
+    const useAutoRotate = !!autoRotateCheckbox?.checked;
+    const finalBlob = useAutoRotate ? await rotateViaAPI(croppedBlob) : croppedBlob;
+    if (resultDiv) {
+      resultDiv.innerHTML = '';
+      const url = URL.createObjectURL(finalBlob);
+      const imgEl = new Image();
+      imgEl.src = url;
+      imgEl.style.maxWidth = '98%';
+      imgEl.style.maxHeight = '600px';
+      imgEl.style.width = 'auto';
+      imgEl.style.height = 'auto';
+      imgEl.style.borderRadius = '12px';
+      imgEl.style.boxShadow = '0 2px 12px rgba(34,197,94,0.09)';
+      imgEl.onload = () => URL.revokeObjectURL(url);
+      resultDiv.appendChild(imgEl);
+    }
+
+    // Gọi flow cũ: /query?stream=false qua visibleText(...) rồi processCombinedOCR(...)
+    const hasText = await visibleText(finalBlob);   // HÀM CŨ CỦA BẠN
+    if (hasText) {
+      await processCombinedOCR(finalBlob, false);   // HÀM CŨ CỦA BẠN
+    } else {
+      // Render N/A: giữ style giống panel hiện tại của bạn
+      const container = document.getElementById('ocrResultsContainer');
+      const ocrPanel = document.getElementById('right-panel');
+      const rows = Array.from({ length: 6 }).map((_, i) => `
+        <tr>
+          <td class="stt">${i + 1}</td>
+          <td><div class="ocr-cell ocr-origin"><input type="text" value="N/A" readonly></div></td>
+          <td><div class="ocr-cell ocr-fixed"><input type="text" value="N/A" readonly class="fixed"></div></td>
+        </tr>`).join('');
+      container.innerHTML = `
+        <div class="ocr-title" style="margin-bottom:10px;">Compare OCR Results</div>
+        <div class="ocr-result-wrapper">
+          <table class="ocr-table" style="width:100%;max-width:700px;">
+            <thead>
+              <tr>
+                <th class="ocr-th-stt">No.</th>
+                <th class="ocr-th-origin">Original</th>
+                <th class="ocr-th-fixed">Corrected (if any)</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+      if (ocrPanel) ocrPanel.style.display = 'flex';
+    }
+  } catch (err) {
+    console.error(err);
+    const container = document.getElementById('ocrResultsContainer');
+    container.innerHTML = `<span style="color:#ef4444;font-size:16px;">Error: ${err.message}</span>`;
+    const ocrPanel = document.getElementById('right-panel');
+    if (ocrPanel) ocrPanel.style.display = 'flex';
+  }
 }
+
+
 async function rotateAndRerun(direction) {
     try {
         // Lấy blob hiện tại để xoay; fallback: lấy từ <img> trong #result nếu cần
@@ -1778,7 +1907,18 @@ async function rotateAndRerun(direction) {
         console.error(err);
     }
 }
-
+async function rotateViaAPI(inputBlob) {
+  const form = new FormData();
+  form.append('image', inputBlob, 'crop.png');
+  const res = await fetch('http://10.13.34.180:5000/rotate2', {
+    method: 'POST',
+    body: form
+  });
+  if (!res.ok) {
+    throw new Error('Rotate2 failed');
+  }
+  return await res.blob(); // ảnh PNG đã xoay
+}
 // --- Crop ảnh từ ROI bất kỳ, trả về blob ---
 async function cropImageFromRoi(roiObj) {
     // Tạo canvas tạm để crop
@@ -1799,54 +1939,91 @@ async function cropImageFromRoi(roiObj) {
 }
 
 // Sửa lại captureBtn event để gọi handleCropAndOCR (đã là async)
+// recognizeBtn.addEventListener('click', async () => {
+//     if (!img || !uploadedFilename || !uploadedFileHex) {
+//         resultDiv.innerHTML = '<span style="color:#ef4444;font-size:16px;">No image to crop!</span>';
+//         return;
+//     }
+//     // --- OCR LOADING EFFECT ---
+//     const ocrContainer = document.getElementById('ocrResultsContainer');
+//     if (ocrContainer) {
+//         ocrContainer.innerHTML = `
+//                 <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:180px;">
+//                     <div class="ocr-loading-spinner"></div>
+//                     <div style="margin-top:12px;color:#2563eb;font-size:17px;font-weight:500;">Recognizing OCR...</div>
+//                 </div>
+//                 `;
+//     }
+
+//     // --- Không còn crop sideDetectRoi và gọi leftRightDetection nữa ---
+
+//     // --- Crop ảnh chính (roi) và gửi lên /crop ---
+//     fetch('/crop', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+
+//         body: JSON.stringify({
+//             filename: uploadedFilename,
+//             filedata: uploadedFileHex,
+//             roi: {
+//                 x: roi.x,
+//                 y: roi.y,
+//                 w: roi.w,
+//                 h: roi.h
+//             },
+//             scale: scale
+//         })
+//     })
+//         .then(res => {
+//             if (!res.ok) {
+//                 res.json().then(data => {
+//                 });
+//                 return;
+//             }
+//             return res.blob();
+//         })
+//         .then(async blob => {
+//             if (!blob) return;
+//             await handleCropAndOCR(blob);
+//         });
+// });
 recognizeBtn.addEventListener('click', async () => {
-    if (!img || !uploadedFilename || !uploadedFileHex) {
-        resultDiv.innerHTML = '<span style="color:#ef4444;font-size:16px;">No image to crop!</span>';
-        return;
-    }
-    // --- OCR LOADING EFFECT ---
-    const ocrContainer = document.getElementById('ocrResultsContainer');
+  if (!img || !uploadedFilename || !uploadedFileHex) {
+    resultDiv.innerHTML = '<span style="color:#ef4444;font-size:16px;">No image to crop!</span>';
+    return;
+  }
+
+  const ocrContainer = document.getElementById('ocrResultsContainer');
+  if (ocrContainer) {
+    ocrContainer.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:180px;">
+        <div class="ocr-loading-spinner"></div>
+        <div style="margin-top:12px;color:#2563eb;font-size:17px;font-weight:500;">Recognizing OCR...</div>
+      </div>`;
+  }
+
+  try {
+    const res = await fetch('/crop', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filename: uploadedFilename,
+        filedata: uploadedFileHex,
+        roi: { x: roi.x, y: roi.y, w: roi.w, h: roi.h },
+        scale: scale
+      })
+    });
+    if (!res.ok) throw new Error('Crop failed');
+    const blob = await res.blob();
+    await handleCropAndOCR(blob);
+  } catch (e) {
+    console.error(e);
     if (ocrContainer) {
-        ocrContainer.innerHTML = `
-                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:180px;">
-                    <div class="ocr-loading-spinner"></div>
-                    <div style="margin-top:12px;color:#2563eb;font-size:17px;font-weight:500;">Recognizing OCR...</div>
-                </div>
-                `;
+      ocrContainer.innerHTML = `<span style="color:#ef4444;font-size:16px;">Error: ${e.message}</span>`;
     }
-
-    // --- Không còn crop sideDetectRoi và gọi leftRightDetection nữa ---
-
-    // --- Crop ảnh chính (roi) và gửi lên /crop ---
-    fetch('/crop', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-
-        body: JSON.stringify({
-            filename: uploadedFilename,
-            filedata: uploadedFileHex,
-            roi: {
-                x: roi.x,
-                y: roi.y,
-                w: roi.w,
-                h: roi.h
-            },
-            scale: scale
-        })
-    })
-        .then(res => {
-            if (!res.ok) {
-                res.json().then(data => {
-                });
-                return;
-            }
-            return res.blob();
-        })
-        .then(async blob => {
-            if (!blob) return;
-            await handleCropAndOCR(blob);
-        });
+  }
 });
+
 
 // Thêm biến lưu dictionary
 let dictionary = [];
