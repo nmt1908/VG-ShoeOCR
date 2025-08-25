@@ -2,3 +2,5 @@
 models/
 ocrapif3/parseq-bb5792a6.pt
 ocrapif3/models/
+mold_ROI/
+injet_ROI/
