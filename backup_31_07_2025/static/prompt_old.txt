@@ -1,0 +1,293 @@
+Transcribe the text.
+The image contains embossed text in two regions:
+- A main rectangle (contains five horizontal lines).
+- A rectangle below (contains one horizontal line).
+IMPORTANT: Ignore any overlaid lines, marks, or shapes (such as green or colored lines) that are not part of the original embossed text. Only transcribe actual embossed alphanumeric characters.
+Transcribe exactly 6 lines of text in the correct reading order:
+- Note: Line 3 and Line 6 always share the same main text at the beginning. 
+- Line 3 format: [main_text][space][suffix], where [main_text] is identical to Line 6, and [suffix] is one or more uppercase letters (A-Z) optionally followed by a digit (e.g. A, B, C, D, A1, B2, etc.).
+- Line 6: contains only [main_text] (no suffix), and the text in Line 6 is always larger and clearer. Always use the text from Line 6 as the main part for both Line 3 and Line 6.
+- For Line 3, always use the main part from Line 6, then add the suffix (if any) from Line 3 after a space.
+- For Line 3, only the suffix part (after the space) may be different; the main part must match Line 6 exactly.
+- If there is no suffix in Line 3, just use the main part from Line 6 for both lines.
+- Do not merge, skip, or reformat lines. Do not invent or hallucinate values.
+Other rules:
+- For line 1: The format is always six digits, a dash, the letter V, and one letter G. Example: 002145-VG, 001873-VG. Always include the dash and the letter V.
+- For line 4: The date format must be either XX/XX/XXXX or XX.XX.XXXX (with slash or dot). Only transcribe the date part after the space, and ignore any extra characters before the space. Do not allow other formats or extra digits. Always transcribe the full date as seen, but only in the correct format.
+Return only the raw text for each line, in order, one line per row.
+Do not merge, skip, or reformat lines. Preserve spacing and special characters as seen, always reponsed in Json.
+Examples:
+{
+    "line1": "002145-VG",
+    "line2": "MS253842-1",
+    "line3": "MS8WS9.5 B1",
+    "line4": "CCF 11/28/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS8WS9.5"
+}
+{
+    "line1": "001870-VG",
+    "line2": "MS253842-1",
+    "line3": "MS6WS7.5 A2",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS6WS7.5"
+}
+{
+    "line1": "001870-VG",
+    "line2": "MS253842-1",
+    "line3": "MS6WS75 A1",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS6WS75"
+}
+{
+    "line1": "001871-VG",
+    "line2": "MS253842-1",
+    "line3": "MS6.5WS8 A2",
+    "line4": "CCF 01/21/2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS6.5WS8"
+}
+{
+    "line1": "002399-VG",
+    "line2": "MS253842-1",
+    "line3": "MS8WS95 C2",
+    "line4": "CCF 03/17/2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS8WS95"
+}
+{
+    "line1": "002399-VG",
+    "line2": "MS253842-1",
+    "line3": "MS8WS95 C1",
+    "line4": "CCF 03/17/2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS8WS95"
+}
+{
+    "line1": "002236-VG",
+    "line2": "MS253842-1",
+    "line3": "MS11 B",
+    "line4": "CCF 01/09/2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS11"
+}
+{
+    "line1": "001869-VG",
+    "line2": "MS253842-1",
+    "line3": "MS5.5WS7 A1",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS5.5WS7"
+}
+{
+    "line1": "001873-VG",
+    "line2": "MS253842-1",
+    "line3": "MS7.5WS9 A1",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS7.5WS9"
+}
+__
+{
+    "line1": "002334-VG",
+    "line2": "MS253760-1",
+    "line3": "MS11 A",
+    "line4": "JS 03.08.2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS11 A"
+}
+{
+    "line1": "002334-VG",
+    "line2": "MS253760-1",
+    "line3": "MS8WS95 B2",
+    "line4": "JS 03.08.2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS8WS95"
+}
+{
+    "line1": "001867-VG",
+    "line2": "MS253842-1",
+    "line3": "MS4.5WS6 A2",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS4.5WS6"
+}
+{
+    "line1": "002400-VG",
+    "line2": "MS253842-1",
+    "line3": "MS8.5WS10 C1",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS8.5WS10"
+}
+{
+    "line1": "001877-VG",
+    "line2": "MS253842-1",
+    "line3": "MS9.5WS11 A1",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS9.5WS11"
+}
+{
+    "line1": "001877-VG",
+    "line2": "MS253842-1",
+    "line3": "MS9.5WS11 A2",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS9.5WS11"
+}
+{
+    "line1": "001876-VG",
+    "line2": "MS253842-1",
+    "line3": "MS9WS105 A2",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS9WS105"
+}
+{
+    "line1": "001876-VG",
+    "line2": "MS253842-1",
+    "line3": "MS9WS105 A1",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS9WS105"
+}
+{
+    "line1": "001976-VG",
+    "line2": "MS253842-1",
+    "line3": "MS11 A",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS11"
+}
+{
+    "line1": "002400-VG",
+    "line2": "MS253842-1",
+    "line3": "MS8.5WS10 C2",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS8.5WS10"
+}
+{
+    "line1": "002261-VG",
+    "line2": "MS253842-1",
+    "line3": "MS11 C",
+    "line4": "CCF 01/21/2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS11"
+}
+{
+    "line1": "001872-VG",
+    "line2": "MS253842-1",
+    "line3": "MS7WS8.5 A1",
+    "line4": "CCF 01/21/2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS7WS8.5"
+}
+{
+    "line1": "001872-VG",
+    "line2": "MS253842-1",
+    "line3": "MS7WS8.5 A2",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS7WS8.5"
+}
+{
+    "line1": "002084-VG",
+    "line2": "MS253842-1",
+    "line3": "MS5WS6.5 B2",
+    "line4": "CCF 10/05/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS5WS6.5"
+}
+{
+    "line1": "002084-VG",
+    "line2": "MS253842-1",
+    "line3": "MS5WS6.5 B1",
+    "line4": "CCF 10/05/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS5WS6.5"
+}
+{
+    "line1": "002086-VG",
+    "line2": "MS253842-1",
+    "line3": "MS6WS7.5 B1",
+    "line4": "CCF 10/05/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS5WS6.5"
+}
+{
+    "line1": "002086-VG",
+    "line2": "MS253842-1",
+    "line3": "MS6WS7.5 B2",
+    "line4": "CCF 10/05/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS5WS6.5"
+}
+{
+    "line1": "001868-VG",
+    "line2": "MS253842-1",
+    "line3": "MS5WS6.5 A2",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS5WS6.5"
+}
+{
+    "line1": "001866-VG",
+    "line2": "MS253842-1",
+    "line3": "MS4WS5.5 A1",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS4WS5.5"
+}
+{
+    "line1": "002190-VG",
+    "line2": "MS253842-1",
+    "line3": "MS10WS115 B1",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS10WS115"
+}
+{
+    "line1": "002190-VG",
+    "line2": "MS253842-1",
+    "line3": "MS10WS115 B2",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS10WS115"
+}
+{
+    "line1": "001871-VG",
+    "line2": "MS253842-1",
+    "line3": "MS6.5WS8 A1",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS6.5WS8"
+}
+{
+    "line1": "002211-VG",
+    "line2": "MS253842-1",
+    "line3": "MS7WS8.5 B1",
+    "line4": "CCF 11/28/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS7WS8.5"
+}
+{
+    "line1": "002211-VG",
+    "line2": "MS253842-1",
+    "line3": "MS7WS8.5 B2",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS7WS8.5"
+}
+Incase there were no text on the image just return {
+    "line1": "N/A",
+    "line2": "N/A",
+    "line3": "N/A",
+    "line4": "N/A",
+    "line5": "N/A",
+    "line6": "N/A"
+}
+Transcribe the text from this image:

@@ -1,0 +1,19 @@
+{
+  "dominant_color_hex": "#5e729e",
+  "dominant_color_bgr": [
+    158,
+    114,
+    94
+  ],
+  "use_mask": false,
+  "canny_low": 200,
+  "canny_high": 300,
+  "blur_ksize": 9,
+  "h_min": 24,
+  "h_max": 80,
+  "s_min": 0,
+  "s_max": 255,
+  "v_min": 0,
+  "v_max": 255,
+  "contrast": 1.75
+}

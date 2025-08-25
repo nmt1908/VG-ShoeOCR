@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Shoe LR API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        .result { margin-top: 2em; }
+        img { max-width: 400px; border: 1px solid #ccc; margin-top: 1em; }
+        .info { margin-top: 1em; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h2>Test Shoe Left/Right API</h2>
+    <form id="uploadForm">
+        <input type="file" id="imageInput" accept="image/*" required>
+        <button type="submit">Analyze</button>
+    </form>
+    <div class="result" id="result"></div>
+    <script>
+        document.getElementById('uploadForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('imageInput');
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = "Processing...";
+            if (!fileInput.files.length) {
+                resultDiv.innerHTML = "<span class='error'>Please select an image.</span>";
+                return;
+            }
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+            try {
+                const response = await fetch('http://10.13.34.180:8000/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!response.ok) {
+                    let errMsg = '';
+                    try {
+                        const err = await response.json();
+                        errMsg = err.error || response.statusText;
+                    } catch (jsonErr) {
+                        errMsg = `HTTP ${response.status}: ${response.statusText}`;
+                    }
+                    resultDiv.innerHTML = `<span class='error'>Error: ${errMsg}</span>`;
+                    return;
+                }
+                const data = await response.json();
+                let html = `<div class="info"><b>Side:</b> ${data.side === "L" ? "Left" : "Right"}</div>`;
+                if (data.roi_base64) {
+                    html += `<div class="info"><b>Detected ROI:</b><br>
+                        <img src="data:image/png;base64,${data.roi_base64}" alt="ROI"></div>`;
+                }
+                if (data.text) {
+                    html += `<div class="info"><b>OCR Text:</b> <span style="color:#007bff">${data.text}</span></div>`;
+                }
+                resultDiv.innerHTML = html;
+            } catch (err) {
+                resultDiv.innerHTML = `<span class='error'>Error: ${err}</span>`;
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,1144 @@
+/* --- Modern, clean, animated, responsive layout for 24"/27" screens --- */
+:root {
+    --primary: #2563eb;
+    --primary-light: #60a5fa;
+    --accent: #22c55e;
+    --danger: #ef4444;
+    --bg: #f8fafc;
+    --panel-bg: #fff;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.10);
+    --radius-xl: 28px;
+    --radius-lg: 18px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
+    --transition: 0.25s cubic-bezier(.4, 0, .2, 1);
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(120deg, #f8fafc 0%, #e0e7ef 100%);
+    color: #1e293b;
+    min-height: 100vh;
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+    width: 100vw;
+    overflow-x: hidden;
+}
+
+#main-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 48px;
+    margin: 0;
+    padding: 0;
+    background: var(--panel-bg);
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 900px;
+    width: 100vw;
+    max-width: none;
+    animation: fadeInUp 0.7s;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#button-group {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+#button-group>button,
+#button-group>select {
+    min-width: 180px;
+    height: 56px;
+    font-size: 21px;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    /* Đảm bảo không bị co lại khi thu nhỏ */
+    flex: 1 1 0;
+    margin: 0;
+    /* Đảm bảo các nút và select cùng style */
+}
+
+#button-group>button svg {
+    margin-right: 8px;
+}
+
+#button-group>select {
+    border: none;
+    background: var(--primary-light);
+    color: #fff;
+    padding: 0 44px;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.10);
+    transition: background var(--transition), box-shadow var(--transition);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    outline: none;
+    cursor: pointer;
+}
+
+#button-group>select:focus {
+    background: #2563eb;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.16);
+}
+
+#button-group>select option {
+    color: #222;
+    background: #fff;
+}
+
+/* Responsive: giữ đều khi nhỏ lại */
+@media (max-width: 900px) {
+
+    #button-group>button,
+    #button-group>select {
+        min-width: 120px;
+        height: 42px;
+        font-size: 16px;
+        padding: 0 12px;
+    }
+}
+
+#left-panel,
+#center-panel,
+#right-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--bg);
+    border-radius: 0;
+    box-shadow: none;
+    padding: 36px 16px;
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    min-height: 760px;
+    animation: fadeInPanel 0.8s;
+}
+
+@keyframes fadeInPanel {
+    from {
+        opacity: 0;
+        transform: scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+#center-panel {
+    background: #fff;
+    box-shadow: none;
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+    padding: 36px 16px;
+    margin: 0;
+}
+
+#drop-area {
+    border: 2.5px dashed var(--primary-light);
+    background: #e8f0fe;
+    padding: 38px 0 28px 0;
+    text-align: center;
+    margin-bottom: 28px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 2px 12px rgba(96, 165, 250, 0.07);
+    position: relative;
+    overflow: hidden;
+}
+
+#drop-area:hover {
+    border-color: var(--primary);
+    background: #dbeafe;
+    box-shadow: 0 4px 24px rgba(37, 99, 235, 0.09);
+}
+
+#drop-area button {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 12px 28px;
+    font-size: 18px;
+    cursor: pointer;
+    margin-top: 18px;
+    transition: background var(--transition), box-shadow var(--transition);
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+#drop-area button:hover {
+    background: #1d4ed8;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.13);
+}
+
+#img-size {
+    font-size: 16px;
+    color: #64748b;
+    margin-bottom: 14px;
+    text-align: center;
+    letter-spacing: 0.2px;
+}
+
+#canvas-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f1f5f9;
+    border-radius: var(--radius-md);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+    margin-bottom: 22px;
+    padding: 18px;
+    max-width: 600px;
+    width: 100%;
+    min-height: 740px;
+    transition: box-shadow var(--transition);
+}
+
+#roi-canvas {
+    border: 2.5px solid var(--primary);
+    border-radius: var(--radius-sm);
+    cursor: crosshair;
+    background: #fff;
+    width: 540px;
+    height: 740px;
+    max-width: 540px;
+    max-height: 740px;
+    display: block;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    transition: border var(--transition), box-shadow var(--transition);
+}
+
+#roi-toast {
+    display: none;
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #fff;
+    padding: 10px 28px;
+    border-radius: var(--radius-sm);
+    font-size: 18px;
+    box-shadow: 0 2px 12px rgba(34, 197, 94, 0.13);
+    z-index: 10;
+    animation: fadeInPanel 0.5s;
+}
+
+#capture-btn {
+    margin-top: 22px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 16px 44px;
+    font-size: 21px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.10);
+    transition: background var(--transition), box-shadow var(--transition);
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: 0.2px;
+}
+
+#capture-btn:hover {
+    background: #cc620c;
+    box-shadow: 0 4px 16px rgba(34, 197, 94, 0.16);
+}
+
+#recognize-btn {
+    margin-top: 22px;
+    background: var(--primary-light);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 16px 44px;
+    font-size: 21px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.10);
+    transition: background var(--transition), box-shadow var(--transition);
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: 0.2px;
+}
+
+#recognize-btn:hover {
+    background: #cc620c;
+    box-shadow: 0 4px 16px rgba(34, 197, 94, 0.16);
+}
+
+#result {
+    margin-top: 0;
+    border: 2px solid #e5e7eb;
+    border-radius: var(--radius-md);
+    min-height: 260px;
+    min-width: 260px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    padding: 22px;
+    max-width: 440px;
+    width: 100%;
+    transition: box-shadow var(--transition);
+    animation: fadeInPanel 0.7s;
+    position: relative;
+}
+
+/* Overlay rotate buttons on left/right of the cropped image */
+#rotate-left,
+#rotate-right {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 14px 18px;
+    font-size: 24px; /* icon to hơn */
+    border-radius: 10px;
+    border: 1.5px solid #2563eb;
+    background: #f1f5ff;
+    color: #2563eb;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.16);
+    z-index: 2;
+}
+
+#rotate-left { left: -75px; }
+#rotate-right { right: -75px; }
+
+/* Optional hover */
+#rotate-left:hover,
+#rotate-right:hover {
+    background: #e0e7ef;
+}
+
+#ocrResultsContainer {
+    width: 100%;
+    margin-top: 0;
+}
+
+.ocr-table {
+    width: 100%;
+    max-width: 600px;
+    margin: 28px auto 0 auto;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    animation: fadeInPanel 0.7s;
+    table-layout: fixed;
+}
+
+.ocr-table th,
+.ocr-table td {
+    font-size: 18px !important;
+    color: #ef4444 !important;
+    font-weight: 600 !important;
+    /* Unify font and color for all text in OCR result */
+    padding: 0;
+    border: none;
+    background: none;
+    vertical-align: middle;
+}
+
+.ocr-table th {
+    background: #f1f5f9;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 0.2px;
+    height: 48px;
+    font-size: 18px;
+}
+
+.ocr-table th:last-child {
+    background: #fff0f0;
+    color: var(--danger);
+}
+
+.ocr-table td {
+    background: #f8fafc;
+    border-radius: var(--radius-sm);
+    text-align: center;
+    transition: background var(--transition);
+    padding: 0;
+    height: 54px;
+    vertical-align: middle;
+}
+
+.ocr-table td input {
+    width: 100%;
+    font-size: 16px;
+    padding: 7px 12px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid #e5e7eb;
+    background: #f8fafc;
+    color: #222;
+    transition: border var(--transition), background var(--transition);
+}
+
+.ocr-table td.input.fixed {
+    border: 2px solid var(--danger);
+    background: #fff;
+    color: var(--danger);
+    font-weight: 600;
+}
+
+.ocr-table td.stt {
+    background: #f1f5f9;
+    color: #64748b;
+    font-weight: 500;
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    width: 44px;
+}
+
+.ocr-table tr:last-child td {
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.ocr-title {
+    text-align: center;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--primary);
+    margin: 0 0 10px 0;
+    letter-spacing: 0.5px;
+    animation: fadeInUp 0.7s;
+}
+
+.panel-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 22px;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 8px rgba(37, 99, 235, 0.04);
+    animation: fadeInUp 0.7s;
+}
+
+.panel-section {
+    width: 100%;
+    margin-bottom: 22px;
+}
+
+.panel-section:last-child {
+    margin-bottom: 0;
+}
+
+.panel-instruction {
+    font-size: 16px;
+    color: #64748b;
+    margin-top: 28px;
+    background: #f1f5f9;
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    animation: fadeInPanel 0.7s;
+}
+
+.panel-instruction ul {
+    margin: 10px 0 0 22px;
+    padding: 0;
+}
+
+.panel-instruction li {
+    margin-bottom: 4px;
+    transition: color var(--transition);
+}
+
+.panel-instruction li:hover {
+    color: var(--primary);
+}
+
+.dict-btn {
+    margin-top: 28px;
+    background: #0ea5e9;
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 12px 28px;
+    font-size: 18px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background var(--transition), box-shadow var(--transition);
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.09);
+}
+
+.dict-btn:hover {
+    background: #0369a1;
+    box-shadow: 0 4px 16px rgba(14, 165, 233, 0.13);
+}
+
+#dict-status {
+    margin-top: 14px;
+    font-size: 15px;
+    color: var(--primary);
+    min-height: 22px;
+    transition: color var(--transition);
+}
+
+#yellow-text-img-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 18px;
+    margin-bottom: 0;
+    min-height: 40px;
+    animation: fadeInPanel 0.7s;
+}
+
+#yellow-text-img {
+    border: 2px solid #fbbf24;
+    background: #fef9c3;
+    box-shadow: 0 2px 12px rgba(251, 191, 36, 0.13);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    animation: fadeInPanel 0.7s;
+}
+
+#side-cropped-img {
+    margin-top: 18px;
+    margin-bottom: 0;
+    border: 2px solid #fb923c;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 2px 12px rgba(251, 146, 60, 0.13);
+    animation: fadeInPanel 0.7s;
+}
+
+/* --- Moved from script.js --- */
+.ocr-loading-spinner {
+    border: 5px solid #e0e7ef;
+    border-top: 5px solid #2563eb;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    animation: ocr-spin 1s linear infinite;
+}
+
+@keyframes ocr-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.ocr-result-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.ocr-table {
+    border-radius: 16px;
+    overflow: hidden;
+    background: #f8fafc;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    margin: 0 auto;
+}
+
+.ocr-table th,
+.ocr-table td {
+    padding: 0;
+    border: none;
+    background: none;
+    vertical-align: middle;
+}
+
+.ocr-th-stt {
+    width: 44px;
+    background: #e0e7ef;
+    color: #2563eb;
+    font-weight: 700;
+    font-size: 16px;
+    border-radius: 12px 0 0 0;
+}
+
+.ocr-th-origin {
+    background: #e0e7ef;
+    color: #2563eb;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.ocr-th-fixed {
+    background: #fff0f0;
+    color: #ef4444;
+    font-weight: 700;
+    font-size: 16px;
+    border-radius: 0 12px 0 0;
+}
+
+.ocr-cell {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 8px;
+    justify-content: flex-start;
+    align-items: center;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 100%;
+    min-height: 44px;
+    padding: 0 8px;
+    justify-content: flex-start;
+}
+
+.ocr-origin,
+.ocr-fixed {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    height: 100%;
+}
+
+.ocr-table td input,
+.ocr-table td select {
+    height: 38px;
+    min-width: 120px;
+    max-width: 220px;
+    font-size: 17px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #e5e7eb;
+    background: #f8fafc;
+    color: #222;
+    font-weight: 500;
+    box-shadow: 0 1px 4px rgba(100, 116, 139, 0.04);
+    margin: 0;
+    box-sizing: border-box;
+    transition: border 0.2s, background 0.2s;
+}
+
+.ocr-table td input.fixed,
+.ocr-table td select.fixed {
+    border: 2px solid var(--danger);
+    background: #fff7f7;
+    color: var(--danger);
+    font-weight: 600;
+}
+
+.ocr-table td select {
+    min-width: 120px;
+    max-width: 220px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: #f8fafc url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%2364748b' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 12px center/16px 10px;
+    padding-right: 32px;
+}
+
+.ocr-table td select:focus,
+.ocr-table td input:focus {
+    border: 2px solid var(--primary);
+    outline: none;
+    background: #fff;
+}
+
+.ocr-table td .side-btn {
+    min-width: 44px;
+    height: 38px;
+    padding: 0 16px;
+    font-size: 16px;
+    margin: 0 4px 0 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ocr-table td .side-btn:last-child {
+    margin-right: 0;
+}
+
+.ocr-table td .ocr-plus-btn {
+    min-width: 38px;
+    height: 38px;
+    padding: 0;
+    margin-left: 8px;
+    margin-right: 0;
+    border-radius: 8px;
+    background: #fff;
+    border: 2px solid var(--primary-light);
+    color: var(--primary-light);
+    font-size: 22px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border 0.15s, color 0.15s;
+    box-shadow: 0 1px 4px rgba(96, 165, 250, 0.07);
+    vertical-align: middle;
+}
+
+.ocr-table td .ocr-plus-btn:hover {
+    background: var(--primary-light);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+.ocr-table td .ocr-plus-btn:active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+.ocr-table td .ocr-plus-btn,
+.ocr-table td input,
+.ocr-table td select,
+.ocr-table td .side-btn {
+    /* Đảm bảo cùng chiều cao, thẳng hàng */
+    vertical-align: middle;
+}
+
+.ocr-table td .ocr-plus-btn {
+    /* Đảm bảo nút + luôn thẳng hàng bên phải */
+    align-self: center;
+}
+
+.ocr-table td .ocr-cell {
+    /* Đảm bảo các thành phần trong cell luôn căn giữa theo chiều dọc */
+    align-items: center;
+}
+
+.ocr-table td .ocr-cell>* {
+    /* Khoảng cách đều giữa các thành phần */
+    margin-right: 8px;
+}
+
+.ocr-table td .ocr-cell>*:last-child {
+    margin-right: 0;
+}
+
+/* Responsive cho OCR Result Panel */
+@media (max-width: 900px) {
+    .ocr-table {
+        font-size: 15px;
+    }
+
+    .ocr-table th,
+    .ocr-table td {
+        font-size: 15px;
+        padding: 0;
+    }
+
+    .ocr-table td input,
+    .ocr-table td select,
+    .ocr-table td .side-btn,
+    .ocr-table td .ocr-plus-btn {
+        height: 32px;
+        font-size: 15px;
+        min-width: 90px;
+        max-width: 160px;
+    }
+}
+
+/* --- Responsive for 24"/27" screens and smaller --- */
+@media (max-width: 1800px) {
+    #main-container {
+        gap: 0;
+        padding: 0;
+        max-width: none;
+    }
+
+    #left-panel,
+    #center-panel,
+    #right-panel {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+        padding: 22px 6px;
+    }
+
+    #center-panel {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+        padding: 22px 6px;
+    }
+
+    #roi-canvas {
+        width: 400px;
+        height: 540px;
+        max-width: 400px;
+        max-height: 540px;
+    }
+
+    #canvas-container {
+        min-height: 540px;
+    }
+}
+
+@media (max-width: 1200px) {
+    #main-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        padding: 0;
+        max-width: none;
+    }
+
+    #left-panel,
+    #center-panel,
+    #right-panel {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    #center-panel {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+        padding: 12px 2px;
+    }
+}
+
+/* --- Modernize OCR Result Table --- */
+.ocr-table th,
+.ocr-table td,
+.ocr-table td input,
+.ocr-table td select {
+    font-size: 18px !important;
+    color: #ef4444 !important;
+    font-weight: 600 !important;
+    /* Unify font and color for all text in OCR result */
+}
+
+.ocr-table th,
+.ocr-table td {
+    background: #fff !important;
+    border: none !important;
+    /* Remove background stripes for a cleaner look */
+}
+
+.ocr-table td input,
+.ocr-table td select {
+    background: #fff !important;
+    /* border: 2px solid #ef4444 !important; */
+    color: #ef4444 !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 1px 6px rgba(239, 68, 68, 0.07);
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+.ocr-table td input:focus,
+.ocr-table td select:focus {
+    border: 2.5px solid #ef4444 !important;
+    outline: none;
+    box-shadow: 0 2px 12px rgba(239, 68, 68, 0.13);
+    background: #fff;
+}
+
+.ocr-table td input.fixed,
+.ocr-table td select.fixed {
+    background: #fff !important;
+    border: 2.5px solid #ef4444 !important;
+    color: #ef4444 !important;
+    font-weight: 700 !important;
+}
+
+.ocr-table .ocr-cell {
+    gap: 16px !important;
+    padding: 10px 0 !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+}
+
+.ocr-table .ocr-origin input,
+.ocr-table .ocr-fixed input {
+    width: 100%;
+    min-width: 120px;
+    max-width: 240px;
+    text-align: center;
+    border-radius: 10px;
+    /* Consistent input style */
+}
+
+.ocr-table .ocr-th-stt,
+.ocr-table .ocr-th-origin,
+.ocr-table .ocr-th-fixed {
+    color: #ef4444 !important;
+    background: #fff !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    border-radius: 0 !important;
+    border-bottom: 2px solid #ef4444 !important;
+}
+
+.ocr-table .ocr-th-stt {
+    width: 54px !important;
+}
+
+.ocr-table .ocr-th-fixed {
+    text-align: center;
+}
+
+.ocr-table .stt {
+    color: #ef4444 !important;
+    font-weight: 700 !important;
+    background: #fff !important;
+    font-size: 18px !important;
+}
+
+.ocr-table .ocr-title {
+    color: #ef4444 !important;
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    margin-bottom: 10px !important;
+    letter-spacing: 0.5px;
+}
+
+.ocr-table .ocr-result-wrapper {
+    background: #fff !important;
+    border-radius: 18px !important;
+    box-shadow: 0 4px 24px rgba(239, 68, 68, 0.07);
+    padding: 18px 0 !important;
+}
+
+.ocr-table tr {
+    border-radius: 0 !important;
+    background: #fff !important;
+}
+
+/* --- Modernize Side Buttons --- */
+.ocr-table .side-btn {
+    min-width: 70px !important;
+    height: 48px !important;
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    border-radius: 12px !important;
+    background: #2563eb !important;
+    border: 2.5px solid #2563eb !important;
+    color: #ffffff !important;
+    margin: 0 10px 0 0 !important;
+    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.09);
+    transition: background 0.18s, border 0.18s, color 0.18s, box-shadow 0.18s;
+    cursor: pointer;
+    outline: none;
+    letter-spacing: 0.5px;
+}
+
+.ocr-table .side-btn:last-child {
+    margin-right: 0 !important;
+}
+
+.ocr-table .side-btn.selected,
+.ocr-table .side-btn:active,
+.ocr-table .side-btn:hover {
+    background: #ef4444 !important;
+    color: #fff !important;
+    border: 2.5px solid #ef4444 !important;
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.16);
+}
+
+/* --- Override for OCR Result Table: No. and Original columns --- */
+.ocr-table th.ocr-th-stt,
+.ocr-table th.ocr-th-origin,
+.ocr-table td.stt,
+.ocr-table td .ocr-origin input {
+    color: #60a5fa !important;
+    font-weight: 700 !important;
+}
+
+/* Đảm bảo input trong cột Original luôn màu đen */
+.ocr-table td .ocr-origin input {
+    color: #60a5fa !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+}
+
+/* --- Responsive adjustments for OCR Result Table --- */
+@media (max-width: 900px) {
+
+    .ocr-table th,
+    .ocr-table td,
+    .ocr-table td input,
+    .ocr-table td select {
+        font-size: 16px !important;
+    }
+
+    .ocr-table .side-btn {
+        min-width: 54px !important;
+        height: 38px !important;
+        font-size: 17px !important;
+    }
+}
+
+/* Style cho nút Save dưới OCR Result Panel */
+#ocr-save-btn {
+    margin-top: 0;
+    background: var(--primary-light);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 16px 44px;
+    font-size: 21px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.10);
+    transition: background var(--transition), box-shadow var(--transition);
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: 0.2px;
+    min-width: 180px;
+}
+
+#ocr-save-btn:hover {
+    background: #2563eb;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.16);
+}
+
+/* Style lại select#device-select cho đồng bộ với các nút */
+#device-select {
+    margin-left: 18px;
+    padding: 16px 44px;
+    border-radius: var(--radius-sm);
+    font-size: 21px;
+    border: none;
+    background: var(--primary-light);
+    color: #fff;
+    font-weight: 700;
+    min-width: 180px;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.10);
+    transition: background var(--transition), box-shadow var(--transition);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    outline: none;
+    height: 56px;
+    line-height: 1.2;
+}
+
+#device-select:focus {
+    background: #2563eb;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.16);
+}
+
+#device-select option {
+    color: #222;
+    background: #fff;
+}
+
+.ocr-table td input.selectable-size {
+    cursor: pointer;
+    border: 2px solid #60a5fa !important;
+    background: #2563eb !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    transition: background 0.18s, border 0.18s, color 0.18s;
+}
+
+.ocr-table td input.selectable-size:hover,
+.ocr-table td input.selectable-size:active,
+.ocr-table td input.selectable-size.selected {
+    background: #ef4444 !important;
+    color: #fff !important;
+    border: 2.5px solid #ef4444 !important;
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.16);
+
+}
+/* ===== Webcam Modal ===== */
+.modal.hidden { display: none; }
+.modal { position: fixed; inset: 0; z-index: 1000; }
+.modal-backdrop {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.45);
+}
+.modal-dialog {
+  position: relative; margin: 4vh auto 0; width: min(92vw, 860px);
+  background: #fff; border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+  display: flex; flex-direction: column; overflow: hidden;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+.modal-header, .modal-footer {
+  padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid #e5e7eb;
+}
+.modal-footer { border-top: 1px solid #e5e7eb; border-bottom: none; justify-content: flex-end; gap: 10px; }
+.modal-body { padding: 12px 16px; }
+
+.modal-close {
+  border: 1px solid #e5e7eb; background: #f8fafc; border-radius: 8px; padding: 6px 10px; cursor: pointer;
+}
+.modal-close:hover { background: #eef2ff; }
+
+.webcam-box {
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  margin: 0 auto;
+  /* Giới hạn theo viewport để không tràn màn hình */
+  max-width: 92vw;
+  max-height: 82vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Xoay preview 90° ngược chiều kim đồng hồ */
+#webcam-video {
+  display: block;
+  transform: rotate(-90deg);
+  transform-origin: center center;
+  object-fit: contain;
+}
+
+/* Ẩn canvas chụp */
+.hidden { display: none; }
+
+/* Nút Capture */
+#webcam-capture {
+  padding: 8px 14px; border-radius: 10px;
+  border: 1.5px solid #2563eb; background: #f1f5ff; color: #2563eb; font-weight: 600;
+  cursor: pointer;
+}
+#webcam-capture:hover { filter: brightness(0.98); }

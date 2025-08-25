@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>VG-ShoeOCR</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <div id="main-container">
+    <div id="left-panel">
+      <!-- <div class="panel-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <path d="M21 15l-5-5L5 21"></path>
+        </svg>
+        <span>1. Image & ROI</span>
+
+      </div> -->
+      <div class="panel-title"><span id="status"></span></div>
+
+      <!-- <div id="drop-area">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        <p>Drag and drop an image here</p>
+        <input type="file" id="fileElem" accept="image/*" style="display:none">
+        <button onclick="document.getElementById('fileElem').click()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Choose Image
+        </button>
+      </div> -->
+      <div id="img-size"></div>
+      <div id="canvas-container">
+        <canvas id="roi-canvas" width="540" height="740" style="display: none;"></canvas>
+        <video id="webcam-video" autoplay playsinline muted></video>
+        <!-- canvas ẩn để capture -->
+        <canvas id="webcam-canvas" class="hidden"></canvas>
+        <div id="roi-toast">Cấu hình ROI đã được lưu!</div>
+      </div>
+     
+
+    </div>
+    <div id="center-panel">
+      <!-- <div class="panel-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 3l18 18"></path>
+          <path d="M19 19H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M18 6l-3-3H9L6 6"></path>
+        </svg>
+        <span>2. Cropped Image Result</span>
+      </div> -->
+      <div id="result" class="panel-section">
+        <!-- Rotate buttons now overlay inside the result box -->
+        <button id="rotate-left" title="Rotate CCW 3°">⟲</button>
+        <button id="rotate-right" title="Rotate CW 3°">⟳</button>
+      </div>
+      <div id="yellow-text-img-container"></div>
+       <div id="button-group">
+        <button id="recognize-btn">
+          
+          Nhận diện
+        </button>
+        <button id="capture-btn" style="display:none">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+            <circle cx="12" cy="13" r="3"></circle>
+          </svg>
+          Chụp ảnh
+        </button>
+        <!-- <button id="webcam-btn" title="Open Webcam">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            style="margin-right:8px;">
+            <path d="M23 7l-7 5 7 5V7z"></path>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+          </svg>
+          Webcam
+        </button> -->
+        <button id="webcam-capture">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path>
+            <circle cx="12" cy="13" r="3"></circle>
+          </svg>
+          Chụp ảnh
+        </button>
+        <!-- New Auto Rotate (Preview) checkbox -->
+        <label class="auto-rotate-option" title="Toggle automatic preview rotation">
+          <input type="checkbox" id="auto-rotate-checkbox">
+          <span class="checkmark" aria-hidden="true"></span>
+          <span class="text">Auto xoay(Test)</span>
+        </label>
+        <!-- Thêm dropdown chọn device -->
+        <select id="device-select" style="display:none;margin-left:18px; padding:8px 14px; border-radius:8px; font-size:16px;">
+          <option value="">-- Chọn thiết bị --</option>
+        </select>
+
+      </div>
+      <div class="panel-instruction">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+
+        <div>
+          <b>Hướng dẫn sử dụng :</b>
+          <ul>
+            <li>Ấn Space để chụp ảnh</li>
+            <li>Ấn mũi tên trái hoặc phải để chọn đế trái hoặc phải</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div id="webcam-modal" class="modal hidden" aria-hidden="true">
+  <div class="modal-backdrop" data-close="modal"></div>
+  <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="webcamTitle">
+    <div class="modal-header">
+      <h3 id="webcamTitle">Camera</h3>
+      <button class="modal-close" id="webcam-close" aria-label="Close">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="webcam-box">
+        <!-- video xoay 90° CCW bằng CSS -->
+        <video id="webcam-video" autoplay playsinline muted></video>
+        <!-- canvas ẩn để capture -->
+        <canvas id="webcam-canvas" class="hidden"></canvas>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <!-- <button id="webcam-capture" title="Chụp ảnh từ webcam">Capture</button> -->
+    </div>
+  </div>
+</div>
+    <div id="right-panel">
+      <!-- <div class="panel-title">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+          <path d="M8 7h6"></path>
+          <path d="M8 11h8"></path>
+          <path d="M8 15h4"></path>
+        </svg>
+        <span>3. OCR Result</span>
+      </div> -->
+      <div id="ocrResultsContainer">
+        <div id="sideResultRow" style="display:none;">
+          <table class="ocr-table" style="width:100%;max-width:700px;">
+            <thead>
+              <tr>
+                <th class="ocr-th-stt">STT.</th>
+                <th class="ocr-th-origin">Bản gốc</th>
+                <th class="ocr-th-fixed">Chỉnh sửa (nếu có)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="stt">1</td>
+                <td>
+                  <div class="ocr-cell ocr-origin">
+                    <input type="text" value="Side" readonly>
+                  </div>
+                </td>
+                <td>
+                  <div class="ocr-cell ocr-fixed">
+                    <input type="text" id="sideResultValue" value="" readonly class="fixed">
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div id="ocr-save-btn-container" style="display:flex;justify-content:center;margin-top:28px;">
+        <button id="ocr-save-btn">
+          Lưu
+        </button>
+      </div>
+      <button id="fetch-dict-btn" class="dict-btn" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+          <path d="M8 7h6"></path>
+          <path d="M8 11h8"></path>
+          <path d="M8 15h4"></path>
+        </svg>
+        Fetch Dictionary
+      </button>
+      <div class="panel-title"><span id="dict-status"></span></div>
+      <!-- Thêm nút Save căn giữa dưới OCR Result Panel -->
+
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>

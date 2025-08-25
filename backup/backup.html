@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ROI Cropper</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #222;
+        }
+        
+        body {
+            min-height: 100vh;
+            width: 100vw;
+            overflow-x: hidden;
+        }
+        
+        #main-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 40px;
+            margin: 40px auto 0 auto;
+            padding: 32px 32px 48px 32px;
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 6px 32px rgba(0, 0, 0, 0.08);
+            min-height: 900px;
+        }
+        
+        #left-panel,
+        #center-panel,
+        #right-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #f8fafc;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            padding: 28px 20px;
+            min-width: 380px;
+            max-width: 520px;
+            width: 420px;
+            margin: 0;
+            min-height: 700px;
+        }
+        
+        #center-panel {
+            background: #fff;
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+            min-width: 600px;
+            max-width: 700px;
+            width: 600px;
+            padding: 28px 24px;
+            margin: 0 0;
+        }
+        
+        #drop-area {
+            border: 2.5px dashed #60a5fa;
+            background: #e8f0fe;
+            padding: 32px 0 24px 0;
+            text-align: center;
+            margin-bottom: 24px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        #drop-area:hover {
+            border-color: #2563eb;
+            background: #dbeafe;
+        }
+        
+        #drop-area button {
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 22px;
+            font-size: 17px;
+            cursor: pointer;
+            margin-top: 14px;
+            transition: background 0.2s;
+            font-weight: 500;
+        }
+        
+        #drop-area button:hover {
+            background: #1d4ed8;
+        }
+        
+        #img-size {
+            font-size: 15px;
+            color: #64748b;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        #canvas-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f1f5f9;
+            border-radius: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 18px;
+            padding: 14px;
+            max-width: 540px;
+            width: 100%;
+            min-height: 700px;
+        }
+        
+        #roi-canvas {
+            border: 2px solid #2563eb;
+            border-radius: 10px;
+            cursor: crosshair;
+            background: #fff;
+            width: 500px;
+            height: 700px;
+            max-width: 500px;
+            max-height: 700px;
+            display: block;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        }
+        
+        #roi-toast {
+            display: none;
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #22c55e;
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.12);
+            z-index: 10;
+        }
+        
+        #capture-btn {
+            margin-top: 18px;
+            background: #22c55e;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 38px;
+            font-size: 19px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.08);
+            transition: background 0.2s;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        #capture-btn:hover {
+            background: #16a34a;
+        }
+        
+        #result {
+            margin-top: 0;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 12px;
+            min-height: 220px;
+            min-width: 220px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            padding: 18px;
+            max-width: 380px;
+            width: 100%;
+        }
+        
+        #ocrResultsContainer {
+            width: 100%;
+            margin-top: 0;
+        }
+        
+        .ocr-table {
+            width: 100%;
+            max-width: 520px;
+            margin: 24px auto 0 auto;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .ocr-table th,
+        .ocr-table td {
+            font-size: 16px;
+            padding: 10px 8px;
+            border: none;
+        }
+        
+        .ocr-table th {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #2563eb;
+        }
+        
+        .ocr-table th:last-child {
+            background: #fff0f0;
+            color: #ef4444;
+        }
+        
+        .ocr-table td {
+            background: #f8fafc;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .ocr-table td input {
+            width: 100%;
+            font-size: 15px;
+            padding: 5px 8px;
+            border-radius: 7px;
+            border: 1px solid #e5e7eb;
+            background: #f8fafc;
+            color: #222;
+        }
+        
+        .ocr-table td input.fixed {
+            border: 1.5px solid #ef4444;
+            background: #fff;
+            color: #ef4444;
+        }
+        
+        .ocr-table td.stt {
+            background: #f1f5f9;
+            color: #64748b;
+            font-weight: 500;
+            border-radius: 8px 0 0 8px;
+            width: 40px;
+        }
+        
+        .ocr-table tr:last-child td {
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .ocr-title {
+            text-align: center;
+            font-weight: 600;
+            font-size: 20px;
+            color: #2563eb;
+            margin: 0 0 8px 0;
+            letter-spacing: 0.5px;
+        }
+        
+        .panel-title {
+            font-size: 21px;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 18px;
+            letter-spacing: 0.5px;
+        }
+        
+        .panel-section {
+            width: 100%;
+            margin-bottom: 18px;
+        }
+        
+        .panel-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .panel-instruction {
+            font-size: 15px;
+            color: #64748b;
+            margin-top: 24px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 12px 16px;
+            width: 100%;
+        }
+        
+        .panel-instruction ul {
+            margin: 8px 0 0 18px;
+            padding: 0;
+        }
+        
+        .panel-instruction li {
+            margin-bottom: 2px;
+        }
+        
+        .dict-btn {
+            margin-top: 24px;
+            background: #0ea5e9;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 22px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        
+        .dict-btn:hover {
+            background: #0369a1;
+        }
+        
+        #dict-status {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #2563eb;
+        }
+        
+        @media (max-width: 1600px) {
+            #main-container {
+                gap: 18px;
+                padding: 18px 4px 32px 4px;
+            }
+            
+            #left-panel,
+            #center-panel,
+            #right-panel {
+                min-width: 320px;
+                max-width: 480px;
+                width: 340px;
+                padding: 18px 8px;
+            }
+            
+            #center-panel {
+                min-width: 400px;
+                max-width: 600px;
+                width: 420px;
+                padding: 18px 10px;
+            }
+            
+            #roi-canvas {
+                width: 380px;
+                height: 520px;
+                max-width: 380px;
+                max-height: 520px;
+            }
+            
+            #canvas-container {
+                min-height: 520px;
+            }
+        }
+        
+        @media (max-width: 1100px) {
+            #main-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 0;
+                padding: 8px 2px;
+            }
+            
+            #left-panel,
+            #center-panel,
+            #right-panel {
+                min-width: 0;
+                max-width: 100vw;
+                width: 100%;
+                margin-bottom: 18px;
+            }
+            
+            #roi-canvas {
+                max-width: 98vw;
+                max-height: 60vh;
+                width: 100%;
+                height: auto;
+            }
+            
+            #canvas-container {
+                max-width: 98vw;
+                min-height: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="main-container">
+        <div id="left-panel">
+            <div class="panel-title">1. Ảnh & ROI</div>
+            <div id="drop-area">
+                <p style="font-size:18px;font-weight:500;color:#2563eb;">Kéo và thả ảnh vào đây</p>
+                <input type="file" id="fileElem" accept="image/*" style="display:none">
+                <button onclick="document.getElementById('fileElem').click()">Chọn ảnh</button>
+            </div>
+            <div id="img-size"></div>
+            <div id="canvas-container">
+                <canvas id="roi-canvas" width="500" height="700"></canvas>
+                <div id="roi-toast">Đã lưu cấu hình ROI!</div>
+            </div>
+            <button id="capture-btn">Chụp ảnh</button>
+        </div>
+        <div id="center-panel">
+            <div class="panel-title">2. Kết quả cắt ảnh</div>
+            <div id="result" class="panel-section"></div>
+            <div class="panel-instruction">
+                <b>Hướng dẫn:</b>
+                <ul>
+                    <li>Kéo thả hoặc chọn ảnh để bắt đầu.</li>
+                    <li>Ấn <b>E</b> 3 lần để bật chế độ chỉnh ROI.</li>
+                    <li>Ấn <b>S</b> 3 lần để lưu ROI và tắt chỉnh ROI.</li>
+                    <li>Kéo thả vùng ROI trên ảnh, sau đó bấm <b>Chụp ảnh</b> để xem kết quả.</li>
+                </ul>
+            </div>
+        </div>
+        <div id="right-panel">
+            <div class="panel-title">3. Kết quả OCR</div>
+            <div id="ocrResultsContainer"></div>
+            <button id="fetch-dict-btn" class="dict-btn">Fetch Dictionary</button>
+            <div id="dict-status"></div>
+        </div>
+    </div>
+    <script>
+        const dropArea = document.getElementById('drop-area');
+        const fileElem = document.getElementById('fileElem');
+        const canvas = document.getElementById('roi-canvas');
+        const ctx = canvas.getContext('2d');
+        const captureBtn = document.getElementById('capture-btn');
+        const resultDiv = document.getElementById('result');
+        const imgSizeDiv = document.getElementById('img-size');
+        
+        let img = null;
+        let imgNaturalWidth = 0, imgNaturalHeight = 0;
+        let scale = 1;
+        let roi = { x: 100, y: 100, w: 200, h: 120 };
+        let dragging = false, resizing = false, dragOffset = {}, resizeCorner = null;
+        let sCount = 0, eCount = 0;
+        let roiEditable = false;
+        const roiToast = document.getElementById('roi-toast');
+        let uploadedFilename = null;
+        let uploadedFileHex = null;
+        
+        // Không cần SERVER_URL nữa, dùng endpoint trực tiếp
+        // const SERVER_URL = 'http://localhost:5000';
+        
+        // Chặn reload khi kéo thả file vào bất kỳ đâu trên trang
+        document.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        document.addEventListener('drop', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        
+        dropArea.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropArea.style.background = '#e0e7ef';
+        });
+        dropArea.addEventListener('dragleave', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropArea.style.background = '';
+        });
+        dropArea.addEventListener('drop', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropArea.style.background = '';
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        // Draw image and ROI
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (img) {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                // ROI rectangle
+                ctx.save();
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2.5;
+                ctx.setLineDash([8]);
+                ctx.strokeRect(roi.x, roi.y, roi.w, roi.h);
+                ctx.setLineDash([]);
+                // Draw resize handles
+                const handles = getHandles();
+                handles.forEach(h => {
+                    ctx.fillStyle = '#2563eb';
+                    ctx.fillRect(h.x - 7, h.y - 7, 14, 14);
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(h.x - 7, h.y - 7, 14, 14);
+                });
+                ctx.restore();
+            }
+        }
+        
+        // Get 4 corners for resizing
+        function getHandles() {
+            return [
+            { x: roi.x, y: roi.y }, // top-left
+            { x: roi.x + roi.w, y: roi.y }, // top-right
+            { x: roi.x, y: roi.y + roi.h }, // bottom-left
+            { x: roi.x + roi.w, y: roi.y + roi.h } // bottom-right
+            ];
+        }
+        
+        // Check if point is in handle
+        function getHandleAt(x, y) {
+            return getHandles().findIndex(h => Math.abs(h.x - x) < 14 && Math.abs(h.y - y) < 14);
+        }
+        
+        // Drag and drop
+        dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.style.background = '#e0e7ef'; });
+        dropArea.addEventListener('dragleave', e => { e.preventDefault(); dropArea.style.background = ''; });
+        dropArea.addEventListener('drop', e => {
+            e.preventDefault();
+            dropArea.style.background = '';
+            handleFiles(e.dataTransfer.files);
+        });
+        fileElem.addEventListener('change', e => handleFiles(e.target.files));
+        
+        function parseRoiTxt(txt) {
+            const lines = txt.split('\n');
+            let newRoi = {};
+            lines.forEach(line => {
+                let [k, v] = line.split('=');
+                if (k && v) newRoi[k.trim()] = parseFloat(v.trim());
+            });
+            if (newRoi.x !== undefined && newRoi.y !== undefined && newRoi.w !== undefined && newRoi.h !== undefined) {
+                roi = { x: newRoi.x, y: newRoi.y, w: newRoi.w, h: newRoi.h };
+            }
+        }
+        
+        // Load ROI from txt file when user selects file
+        // roiFileElem.addEventListener('change', function(e) {
+        //   const file = e.target.files[0];
+        //   if (!file) return;
+        //   const reader = new FileReader();
+        //   reader.onload = function(ev) {
+        //     parseRoiTxt(ev.target.result);
+        //     draw();
+        //   };
+        //   reader.readAsText(file);
+        // });
+        
+        // Load ROI from roi-config.txt when loading new image
+        function loadRoiFromTxt(callback) {
+            fetch('roi-config.txt')
+            .then(res => res.ok ? res.text() : Promise.reject())
+            .then(txt => {
+                parseRoiTxt(txt);
+                callback();
+            })
+            .catch(() => callback());
+        }
+        
+        function loadRoiFromServer(callback) {
+            fetch('/roi')
+            .then(res => res.json())
+            .then(roiData => {
+                roi = roiData;
+                callback();
+            })
+            .catch(() => callback());
+        }
+        
+        function handleFiles(files) {
+            if (!files.length) return;
+            const file = files[0];
+            const formData = new FormData();
+            formData.append('image', file);
+            fetch('/upload', { method: 'POST', body: formData })
+            .then(res => {
+                if (!res.ok) {
+                    resultDiv.innerHTML = '<span style="color:#ef4444;font-size:16px;">Lỗi upload ảnh hoặc server không chạy!</span>';
+                    throw new Error('Upload failed');
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (!data.filename || !data.filedata) {
+                    resultDiv.innerHTML = '<span style="color:#ef4444;font-size:16px;">Không nhận được dữ liệu file từ server!</span>';
+                    return;
+                }
+                uploadedFilename = data.filename;
+                uploadedFileHex = data.filedata;
+                img = new Image();
+                img.onload = function () {
+                    imgNaturalWidth = img.naturalWidth;
+                    imgNaturalHeight = img.naturalHeight;
+                    imgSizeDiv.textContent = `Kích thước ảnh gốc: ${imgNaturalWidth} × ${imgNaturalHeight} pixels`;
+                    // Tính scale giữa canvas và ảnh gốc
+                    let maxW = 600, maxH = 800;
+                    scale = Math.min(maxW / imgNaturalWidth, maxH / imgNaturalHeight, 1);
+                    canvas.width = Math.round(imgNaturalWidth * scale);
+                    canvas.height = Math.round(imgNaturalHeight * scale);
+                    // ROI vẽ trên canvas, cần lưu ý scale khi crop
+                    loadRoiFromServer(draw);
+                    // --- TỰ ĐỘNG CHỤP ẢNH SAU KHI LOAD ẢNH XONG ---
+                    setTimeout(() => {
+                        captureBtn.click();
+                    }, 200); // delay nhỏ để đảm bảo ảnh đã vẽ xong
+                };
+                img.src = URL.createObjectURL(file);
+            })
+            .catch(err => {
+                // Đã xử lý lỗi ở trên, không reload trang
+            });
+        }
+        
+        function saveRoiToServer() {
+            fetch('/roi', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(roi)
+            });
+        }
+        
+        // ROI mouse events (only when img loaded and roiEditable)
+        canvas.addEventListener('mousedown', e => {
+            if (!img || !roiEditable) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+            const handleIdx = getHandleAt(x, y);
+            if (handleIdx !== -1) {
+                resizing = true;
+                resizeCorner = handleIdx;
+            } else if (x > roi.x && x < roi.x + roi.w && y > roi.y && y < roi.y + roi.h) {
+                dragging = true;
+                dragOffset = { x: x - roi.x, y: y - roi.y };
+            }
+        });
+        
+        canvas.addEventListener('mousemove', e => {
+            if (!img || !roiEditable) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+            if (resizing) {
+                switch (resizeCorner) {
+                    case 0: // top-left
+                    roi.w += roi.x - x;
+                    roi.h += roi.y - y;
+                    roi.x = x;
+                    roi.y = y;
+                    break;
+                    case 1: // top-right
+                    roi.w = x - roi.x;
+                    roi.h += roi.y - y;
+                    roi.y = y;
+                    break;
+                    case 2: // bottom-left
+                    roi.w += roi.x - x;
+                    roi.x = x;
+                    roi.h = y - roi.y;
+                    break;
+                    case 3: // bottom-right
+                    roi.w = x - roi.x;
+                    roi.h = y - roi.y;
+                    break;
+                }
+                roi.w = Math.max(30, Math.min(roi.w, canvas.width - roi.x));
+                roi.h = Math.max(30, Math.min(roi.h, canvas.height - roi.y));
+                roi.x = Math.max(0, Math.min(roi.x, canvas.width - 30));
+                roi.y = Math.max(0, Math.min(roi.y, canvas.height - 30));
+                draw();
+            } else if (dragging) {
+                roi.x = Math.max(0, Math.min(x - dragOffset.x, canvas.width - roi.w));
+                roi.y = Math.max(0, Math.min(y - dragOffset.y, canvas.height - roi.h));
+                draw();
+            }
+        });
+        
+        canvas.addEventListener('mouseup', e => {
+            dragging = false;
+            resizing = false;
+            resizeCorner = null;
+        });
+        canvas.addEventListener('mouseleave', e => {
+            dragging = false;
+            resizing = false;
+            resizeCorner = null;
+        });
+        
+        // Toggle ROI edit mode with E/S
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'e' || e.key === 'E') {
+                eCount++;
+                if (eCount === 3) {
+                    eCount = 0;
+                    roiEditable = true;
+                    roiToast.textContent = 'Chế độ chỉnh ROI: BẬT';
+                    roiToast.style.display = 'block';
+                    setTimeout(() => { roiToast.style.display = 'none'; roiToast.textContent = 'Đã lưu cấu hình ROI!'; }, 2000);
+                }
+                sCount = 0;
+            } else if (e.key === 's' || e.key === 'S') {
+                sCount++;
+                if (sCount === 3) {
+                    sCount = 0;
+                    roiEditable = false;
+                    roiToast.textContent = 'Chế độ chỉnh ROI: TẮT & Đã lưu cấu hình ROI!';
+                    roiToast.style.display = 'block';
+                    setTimeout(() => { roiToast.style.display = 'none'; roiToast.textContent = 'Đã lưu cấu hình ROI!'; }, 2000);
+                    saveRoiToServer();
+                }
+                eCount = 0;
+            } else {
+                sCount = 0;
+                eCount = 0;
+            }
+        });
+        
+        // Thêm panel kết quả OCR dưới right-panel
+        // Đã có sẵn #ocrResultsContainer trong right-panel
+        
+        // Hàm chuyển blob sang base64
+        async function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+        
+        // Hàm gửi ảnh OCR lên API và hiển thị kết quả
+        async function processCombinedOCR(blob) {
+            try {
+                const response = await fetch('http://10.13.33.50:11434/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'qwen2.5vl:latest',
+                        prompt: `Transcribe the text.
+
+The image contains embossed text in two regions:
+- A main rectangle (contains five horizontal lines).
+- A rectangle below (contains one horizontal line).
+
+IMPORTANT: Ignore any overlaid lines, marks, or shapes (such as green or colored lines) that are not part of the original embossed text. Only transcribe actual embossed alphanumeric characters.
+Transcribe exactly 6 lines of text in the correct reading order:
+- Note: Line 3 and Line 6 always share the same main text at the beginning. 
+- Line 3 format: [main_text][space][suffix], where [main_text] is identical to Line 6, and [suffix] is one or more uppercase letters (A-Z) optionally followed by a digit (e.g. A, B, C, D, A1, B2, etc.).
+- Line 6: contains only [main_text] (no suffix), and the text in Line 6 is always larger and clearer. Always use the text from Line 6 as the main part for both Line 3 and Line 6.
+- For Line 3, always use the main part from Line 6, then add the suffix (if any) from Line 3 after a space.
+- For Line 3, only the suffix part (after the space) may be different; the main part must match Line 6 exactly.
+- If there is no suffix in Line 3, just use the main part from Line 6 for both lines.
+- Do not merge, skip, or reformat lines. Do not invent or hallucinate values.
+
+Other rules:
+- For line 1: The format is always six digits, a dash, the letter V, and one letter G. Example: 002145-VG, 001873-VG. Always include the dash and the letter V.
+- For line 4: The date format must be either XX/XX/XXXX or XX.XX.XXXX (with slash or dot). Only transcribe the date part after the space, and ignore any extra characters before the space. Do not allow other formats or extra digits. Always transcribe the full date as seen, but only in the correct format.
+
+Return only the raw text for each line, in order, one line per row.
+Do not merge, skip, or reformat lines. Preserve spacing and special characters as seen.
+
+Examples:
+{
+    "line1": "002145-VG",
+    "line2": "MS253842-1",
+    "line3": "MS8WS9.5 B1",
+    "line4": "CCF 11/28/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS8WS9.5"
+}
+___
+{
+    "line1": "001871-VG",
+    "line2": "MS253842-1",
+    "line3": "MS6.5WS8 A2",
+    "line4": "CCF 01/21/2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS6.5WS8"
+}
+___
+{
+    "line1": "002399-VG",
+    "line2": "MS253842-1",
+    "line3": "MS8WS95 C2",
+    "line4": "CCF 03/17/2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS8WS95"
+}
+___
+{
+    "line1": "002399-VG",
+    "line2": "MS253842-1",
+    "line3": "MS8WS95 C1",
+    "line4": "CCF 03/17/2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS8WS95"
+}
+___
+{
+    "line1": "002236-VG",
+    "line2": "MS253842-1",
+    "line3": "MS11 B",
+    "line4": "CCF 01/09/2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS11"
+}
+___
+{
+    "line1": "001869-VG",
+    "line2": "MS253842-1",
+    "line3": "MS5.5WS7 A1",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS5.5WS7"
+}
+___
+{
+    "line1": "001873-VG",
+    "line2": "MS253842-1",
+    "line3": "MS7.5WS9 A1",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS7.5WS9"
+}
+___
+{
+    "line1": "002188-VG",
+    "line2": "MS253842-1",
+    "line3": "MS4.5WS5 A",
+    "line4": "CCF 11.28.2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS7WS8.5"
+}
+___
+{
+    "line1": "002334-VG",
+    "line2": "MS253760-1",
+    "line3": "MS11 A",
+    "line4": "JS 03.08.2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS11 A"
+}
+___
+{
+    "line1": "002334-VG",
+    "line2": "MS253760-1",
+    "line3": "MS8WS95 B2",
+    "line4": "JS 03.08.2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS8WS95"
+}
+___
+{
+    "line1": "001867-VG",
+    "line2": "MS253842-1",
+    "line3": "MS4.5WS6 A2",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS4.5WS6"
+}
+___
+{
+    "line1": "002400-VG",
+    "line2": "MS253842-1",
+    "line3": "MS8.5WS10 C1",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS8.5WS10"
+}
+___
+{
+    "line1": "001877-VG",
+    "line2": "MS253842-1",
+    "line3": "MS9.5WS11 A1",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS9.5WS11"
+}
+___
+{
+    "line1": "001877-VG",
+    "line2": "MS253842-1",
+    "line3": "MS9.5WS11 A2",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS9.5WS11"
+}
+___
+{
+    "line1": "001876-VG",
+    "line2": "MS253842-1",
+    "line3": "MS9WS105 A1",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS9WS105"
+}
+___
+{
+    "line1": "001876-VG",
+    "line2": "MS253842-1",
+    "line3": "MS9WS105 A2",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS9WS105"
+}
+___
+{
+    "line1": "001976-VG",
+    "line2": "MS253842-1",
+    "line3": "MS11 A",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS11"
+}
+___
+{
+    "line1": "002400-VG",
+    "line2": "MS253842-1",
+    "line3": "MS8.5WS10 C2",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS8.5WS10"
+}
+___
+{
+    "line1": "002146-VG",
+    "line2": "MS253842-1",
+    "line3": "MS9WS105 B1",
+    "line4": "CCF 10/28/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS9WS105"
+}
+___
+{
+    "line1": "002146-VG",
+    "line2": "MS253842-1",
+    "line3": "MS9WS105 B2",
+    "line4": "CCF 10/28/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS9WS105"
+}
+___
+{
+    "line1": "002261-VG",
+    "line2": "MS253842-1",
+    "line3": "MS11 C",
+    "line4": "CCF 01/21/2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS11"
+}
+___
+{
+    "line1": "001872-VG",
+    "line2": "MS253842-1",
+    "line3": "MS7WS8.5 A1",
+    "line4": "CCF 01/21/2025",
+    "line5": "M/W-RIP024",
+    "line6": "MS7WS8.5"
+}
+    ___
+{
+    "line1": "001872-VG",
+    "line2": "MS253842-1",
+    "line3": "MS7WS8.5 A2",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS7WS8.5"
+}
+___
+{
+    "line1": "002084-VG",
+    "line2": "MS253842-1",
+    "line3": "MS5WS6.5 B2",
+    "line4": "CCF 10/05/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS5WS6.5"
+}
+___
+{
+    "line1": "002084-VG",
+    "line2": "MS253842-1",
+    "line3": "MS5WS6.5 B1",
+    "line4": "CCF 10/05/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS5WS6.5"
+}
+___
+{
+    "line1": "001866-VG",
+    "line2": "MS253842-1",
+    "line3": "MS4WS5.5 A1",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS4WS5.5"
+}
+___
+{
+    "line1": "002190-VG",
+    "line2": "MS253842-1",
+    "line3": "MS10WS115 B2",
+    "line4": "CCF 08/01/2024",
+    "line5": "M/W-RIP024",
+    "line6": "MS10WS115"
+}
+
+
+Transcribe the text from this image:`,
+                        "format": 'json',
+                        "options": { "temperature": 0 },
+                        images: [await blobToBase64(blob)],
+                        stream: false
+                    })
+                });
+                const data = await response.json();
+                let ocrArr = [];
+                try {
+                    // Parse JSON result from API response
+                    const json = JSON.parse(data.response);
+                    // Đúng format API trả về: chỉ có 6 dòng (line1-line6)
+                    ocrArr = [
+                        json.line1 || '',
+                        json.line2 || '',
+                        json.line3 || '',
+                        json.line4 || '',
+                        json.line5 || '',
+                        json.line6 || ''
+                    ];
+                } catch (e) {
+                    ocrArr = [];
+                }
+                const container = document.getElementById('ocrResultsContainer');
+                container.innerHTML = '';
+                const ocrPanel = document.getElementById('right-panel');
+// Kiểm tra đúng 6 dòng (line1-line6)
+if (ocrArr.length === 6) {
+    // Tách dòng 4 (ocrArr[3]) thành 2 phần nếu có dấu cách
+    const line4 = ocrArr[2];
+    const lastSpaceIdx = line4.lastIndexOf(' ');
+    let part1 = line4, part2 = '';
+    if (lastSpaceIdx !== -1) {
+        part1 = line4.substring(0, lastSpaceIdx);
+        part2 = line4.substring(lastSpaceIdx + 1);
+    }
+    const displayArr = [
+        ocrArr[0] || '',
+        ocrArr[1] || '',
+        ocrArr[2] || '',
+        part1 || '',
+        part2 || '',
+        ocrArr[3] || '',
+        ocrArr[4] || '',
+        ocrArr[5] || ''
+    ];
+    // Levenshtein + dictionary
+    function levenshtein(a, b) {
+        const m = a.length, n = b.length;
+        const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+        for (let i = 0; i <= m; i++) dp[i][0] = i;
+        for (let j = 0; j <= n; j++) dp[0][j] = j;
+        for (let i = 1; i <= m; i++) {
+            for (let j = 1; j <= n; j++) {
+                dp[i][j] = Math.min(
+                dp[i - 1][j] + 1,
+                dp[i][j - 1] + 1,
+                dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+                );
+            }
+        }
+        return dp[m][n];
+    }
+    function correctByDictionary(word) {
+        if (!dictionary || dictionary.length === 0) return word;
+
+        // Nếu từ đã có trong dictionary thì giữ nguyên, không sửa
+        if (dictionary.includes(word)) return word;
+
+        // Ưu tiên kiểm tra nếu word chỉ dư 1 ký tự ở đầu/cuối so với một từ trong dictionary
+        for (const dictWord of dictionary) {
+            if (
+                word.length === dictWord.length + 1 &&
+                (word.startsWith(dictWord) || word.endsWith(dictWord))
+            ) {
+                // Nhưng chỉ nhận nếu KHÔNG có từ nào trong dictionary là substring của word (trừ ký tự dư)
+                // Nếu có từ trong dictionary là substring đúng vị trí, ưu tiên trả về từ đó
+                for (const d2 of dictionary) {
+                    if (d2.length === word.length && d2 === word) return d2;
+                    if (d2.length === word.length - 1 && word.includes(d2)) {
+                        // Nếu phần dư là 1 ký tự ở giữa, không sửa
+                        // Nếu phần dư là ở đầu/cuối, ưu tiên d2 nếu d2 khác dictWord
+                        if (d2 !== dictWord) return d2;
+                    }
+                }
+                // Nếu không có từ nào khác phù hợp hơn, mới trả về dictWord
+                return dictWord;
+            }
+        }
+
+        // Nếu không match theo kiểu dư đầu/cuối, dùng Levenshtein như cũ
+        let minDist = Infinity, best = word;
+        for (const dictWord of dictionary) {
+            const dist = levenshtein(word, dictWord);
+            if (dist < minDist) {
+                minDist = dist;
+                best = dictWord;
+            }
+        }
+        if (best !== word && minDist < 3) return best;
+        return word;
+    }
+
+    // Sửa riêng cho part1 (giữa MS và WS)
+    function fixPart1(val) {
+        // Ghép lại nếu có khoảng trắng giữa các phần
+        let compactVal = val.replace(/\s+/g, '');
+
+        // Tìm tất cả các chuỗi dạng số hoặc số có dấu gạch ngang giữa các chữ cái
+        // VD: MS95WS11, MS5555WS11, MS11-115WS11, MS8WS115
+        // => Tìm tất cả các số hoặc số có dấu gạch ngang nằm giữa các chữ cái
+        let result = compactVal;
+        let changed = false;
+
+        // Xử lý các cụm số hoặc số có dấu gạch ngang giữa các chữ cái
+        result = result.replace(/([A-Za-z]+)(\d+(?:-\d+)?)(?=[A-Za-z]|$)/g, function(_, prefix, num) {
+            // Trường hợp đặc biệt: 15 và 1.5 đều có trong dictionary
+            if (
+                (num === "15" || num === "1.5") &&
+                dictionary.includes("15") && dictionary.includes("1.5")
+            ) {
+                changed = true;
+                // Trả về cả hai giá trị, nhưng chỉ dùng cho trường hợp không có hậu tố phía sau
+                // Nếu có hậu tố phía sau, chỉ trả về một giá trị
+                return `${prefix}15`; // sẽ xử lý trả về mảng ở ngoài
+            }
+
+            // Nếu là số có dấu gạch ngang, ví dụ 11-115
+            if (/^\d+-\d+$/.test(num)) {
+                if (dictionary.includes(num)) {
+                    changed = true;
+                    return prefix + num;
+                }
+                // Thử chèn dấu chấm vào phần sau dấu gạch
+                let [left, right] = num.split('-');
+                for (let i = 1; i < right.length; ++i) {
+                    let candidate = left + '-' + right.slice(0, i) + '.' + right.slice(i);
+                    if (dictionary.includes(candidate)) {
+                        changed = true;
+                        return prefix + candidate;
+                    }
+                }
+                // Không sửa được, giữ nguyên
+                return prefix + num;
+            }
+
+            // Nếu là số bình thường, thử chèn dấu chấm vào mọi vị trí
+            if (dictionary.includes(num)) {
+                return prefix + num;
+            }
+            for (let i = 1; i < num.length; ++i) {
+                let candidate = num.slice(0, i) + '.' + num.slice(i);
+                if (dictionary.includes(candidate)) {
+                    changed = true;
+                    return prefix + candidate;
+                }
+            }
+            // Không sửa được, giữ nguyên
+            return prefix + num;
+        });
+
+        // Trường hợp đặc biệt: 15 và 1.5 đều có trong dictionary, trả về cả hai giá trị
+        if (
+            /([A-Za-z]+)15([A-ZaZ]*)$/.test(compactVal) &&
+            dictionary.includes("15") && dictionary.includes("1.5")
+        ) {
+            let prefix = compactVal.match(/([A-Za-z]+)15([A-ZaZ]*)$/)[1];
+            let suffix = compactVal.match(/([A-Za-z]+)15([A-ZaZ]*)$/)[2];
+            return [
+                `${prefix}15${suffix}`,
+                `${prefix}1.5${suffix}`
+            ];
+        }
+
+        return [result];
+    }
+
+    // Sửa các dòng khác như cũ
+    let fixedArr = displayArr.map((val, idx) => {
+        if (dictionary && dictionary.length > 0) {
+            // Chỉ sửa part1 (row 4, idx==3)
+            if (idx === 3) return fixPart1(val);
+            return correctByDictionary(val);
+        }
+        return val;
+    });
+
+    // --- LOG THÔNG TIN ĐÃ SỬA ĐỂ XỬ LÍ LINE 1 ---
+    // fixedArr[1] là mold_id đã sửa (line2)
+    // fixedArr[3] là part1 đã sửa (size, có thể là mảng)
+    // fixedArr[4] là part2 đã sửa (shift, có thể là mảng)
+    let mold_id = Array.isArray(fixedArr[1]) ? fixedArr[1][0] : fixedArr[1];
+
+    // Lấy tất cả giá trị size đã sửa từ các input trong cột "Đã sửa" (ocr-cell ocr-fixed) của hàng part1 (STT 4)
+    setTimeout(() => {
+        const ocrTable = document.querySelector('.ocr-table');
+        if (ocrTable) {
+            // Hàng STT 4 là tr:nth-child(4)
+            const row = ocrTable.querySelector('tr:nth-child(4) .ocr-cell.ocr-fixed');
+            if (row) {
+                const inputs = row.querySelectorAll('input');
+                // Lấy ra các giá trị số nằm giữa MS và WS (hoặc MS và hết chuỗi nếu không có WS)
+                let sizeList = Array.from(inputs).map(input => {
+                    const val = input.value || '';
+                    // Ưu tiên lấy số hoặc dãy số giữa MS và WS
+                    let match = val.match(/MS\s*([0-9.\-]+)\s*WS/i);
+                    if (match) return match[1];
+                    // Nếu không có WS, lấy số sau MS đến hết chuỗi hoặc đến ký tự không phải số/chấm/gạch
+                    match = val.match(/MS\s*([0-9.\-]+)/i);
+                    if (match) return match[1];
+                    return '';
+                }).filter(Boolean);
+                let shift = Array.isArray(fixedArr[4]) ? fixedArr[4][0] : fixedArr[4];
+
+                // Log dữ liệu trước khi gửi lên API
+                console.log('fetch-moldip-for-line1 payload:', {
+                    mold_id: mold_id,
+                    size: sizeList,
+                    shift: shift
+                });
+
+                // Gửi dữ liệu lên endpoint /fetch-moldip-for-line1
+                fetch('/fetch-moldip-for-line1', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mold_id: mold_id,
+                        size: sizeList, // truyền mảng size
+                        shift: shift
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    // Log response data sau khi fetch-moldip-for-line1
+                    console.log('fetch-moldip-for-line1 response:', data);
+                    // --- SỬA LINE 1 TỪ DICTIONARY TRẢ VỀ ---
+                    if (data && Array.isArray(data.mold_ip_list) && data.mold_ip_list.length > 0) {
+                        // Lấy input của dòng 1, cột "Đã sửa" (STT 1, index 0)
+                        const line1Row = ocrTable.querySelector('tr:nth-child(1) .ocr-cell.ocr-fixed input');
+                        if (line1Row) {
+                            // Tìm giá trị gần đúng nhất trong mold_ip_list cho dòng 1 gốc
+                            const line1OriginInput = ocrTable.querySelector('tr:nth-child(1) .ocr-cell.ocr-origin input');
+                            let line1Origin = line1OriginInput ? line1OriginInput.value : '';
+                            // Hàm tìm gần đúng nhất (Levenshtein)
+                            function levenshtein(a, b) {
+                                const m = a.length, n = b.length;
+                                const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+                                for (let i = 0; i <= m; i++) dp[i][0] = i;
+                                for (let j = 0; j <= n; j++) dp[0][j] = j;
+                                for (let i = 1; i <= m; i++) {
+                                    for (let j = 1; j <= n; j++) {
+                                        dp[i][j] = Math.min(
+                                            dp[i - 1][j] + 1,
+                                            dp[i][j - 1] + 1,
+                                            dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+                                        );
+                                    }
+                                }
+                                return dp[m][n];
+                            }
+                            let best = data.mold_ip_list[0];
+                            let minDist = levenshtein(line1Origin, best);
+                            for (const cand of data.mold_ip_list) {
+                                const dist = levenshtein(line1Origin, cand);
+                                if (dist < minDist) {
+                                    minDist = dist;
+                                    best = cand;
+                                }
+                            }
+                            // Gán giá trị tốt nhất vào input "Đã sửa" dòng 1
+                            line1Row.value = best;
+                            line1Row.classList.add('fixed');
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error('fetch-moldip-for-line1 error:', err);
+                });
+            }
+        }
+    }, 0);
+
+    // Render bảng OCR
+    let html = `
+    <div class="ocr-title" style="margin-bottom:10px;">So sánh kết quả OCR</div>
+    <div class="ocr-result-wrapper">
+      <table class="ocr-table" style="width:100%;max-width:700px;">
+        <thead>
+          <tr>
+            <th class="ocr-th-stt">STT</th>
+            <th class="ocr-th-origin">Gốc</th>
+            <th class="ocr-th-fixed">Đã sửa (nếu có)</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    for (let i = 0; i < displayArr.length; ++i) {
+        html += `<tr>
+          <td class="stt">${i + 1}</td>
+          <td>
+            <div class="ocr-cell ocr-origin">
+              <input type="text" value="${displayArr[i]}" readonly>
+            </div>
+          </td>`;
+        // Chỉ hiển thị cột "Đã sửa" cho STT 2 và 3 và part1/part2
+        if (i === 0 || i === 1 || i === 3 || i === 4) {
+            html += `<td>
+              <div class="ocr-cell ocr-fixed">`;
+            if (Array.isArray(fixedArr[i])) {
+                for (const fixedVal of fixedArr[i]) {
+                    html += `<input type="text" value="${fixedVal}" readonly class="fixed multi">`;
+                }
+            } else {
+                html += `<input type="text" value="${fixedArr[i]}" readonly class="fixed">`;
+            }
+            html += `</div></td>`;
+        } else {
+            html += `<td><div class="ocr-cell"></div></td>`;
+        }
+        html += `</tr>`;
+    }
+    html += `</tbody></table></div>
+    <style>
+    .ocr-result-wrapper {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+    .ocr-table {
+        border-radius: 16px;
+        overflow: hidden;
+        background: #f8fafc;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        margin: 0 auto;
+    }
+    .ocr-table th, .ocr-table td {
+        padding: 0;
+        border: none;
+        background: none;
+    }
+    .ocr-th-stt {
+        width: 44px;
+        background: #e0e7ef;
+        color: #2563eb;
+        font-weight: 700;
+        font-size: 16px;
+        border-radius: 12px 0 0 0;
+    }
+    .ocr-th-origin {
+        background: #e0e7ef;
+        color: #2563eb;
+        font-weight: 700;
+        font-size: 16px;
+    }
+    .ocr-th-fixed {
+        background: #fff0f0;
+        color: #ef4444;
+        font-weight: 700;
+        font-size: 16px;
+        border-radius: 0 12px 0 0;
+    }
+    .ocr-cell {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px 8px;
+        justify-content: flex-start;
+        align-items: center;
+        min-height: 44px;
+    }
+    .ocr-origin input {
+        width: 100%;
+        min-width: 120px;
+        max-width: 220px;
+        font-size: 17px;
+        padding: 7px 12px;
+        border-radius: 8px;
+        border: 1.5px solid #e5e7eb;
+        background: #f8fafc;
+        color: #222;
+        font-weight: 500;
+        box-shadow: 0 1px 4px rgba(100,116,139,0.04);
+    }
+    .ocr-fixed input.fixed {
+        min-width: 80px;
+        max-width: 120px;
+        font-size: 16px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        border: 2px solid #ef4444;
+        background: #fff7f7;
+        color: #ef4444;
+        font-weight: 600;
+        margin-bottom: 4px;
+        margin-right: 6px;
+        box-shadow: 0 1px 4px rgba(239,68,68,0.07);
+        transition: border 0.2s;
+    }
+    .ocr-fixed input.fixed:focus {
+        border: 2px solid #2563eb;
+        outline: none;
+    }
+    .ocr-table tr {
+        background: none;
+    }
+    .ocr-table tr:nth-child(even) .ocr-origin input,
+    .ocr-table tr:nth-child(even) .ocr-fixed input.fixed {
+        background: #f1f5f9;
+    }
+    .ocr-table tr:last-child td {
+        border-radius: 0 0 12px 12px;
+    }
+    </style>
+    `;
+    container.innerHTML = html;
+} else {
+    container.innerHTML = '<span style="color:#ef4444;font-size:16px;">No valid OCR JSON result</span>';
+}
+if (ocrPanel) ocrPanel.style.display = 'flex';
+            } catch (error) {
+                const container = document.getElementById('ocrResultsContainer');
+                container.innerHTML = `<span style="color:#ef4444;font-size:16px;">Error: ${error.message}</span>`;
+                const ocrPanel = document.getElementById('right-panel');
+                if (ocrPanel) ocrPanel.style.display = 'flex';
+            }
+        }
+        
+        // Sau khi nhận ảnh crop từ API Python, gọi hàm này để OCR
+        function handleCropAndOCR(blob) {
+            // Hiển thị ảnh crop to hơn
+            resultDiv.innerHTML = '';
+            const croppedImg = new Image();
+            croppedImg.src = URL.createObjectURL(blob);
+            croppedImg.style.maxWidth = '98%';
+            croppedImg.style.maxHeight = '600px';
+            croppedImg.style.width = 'auto';
+            croppedImg.style.height = 'auto';
+            croppedImg.style.borderRadius = '12px';
+            croppedImg.style.boxShadow = '0 2px 12px rgba(34,197,94,0.09)';
+            resultDiv.appendChild(croppedImg);
+
+            // Gửi ảnh crop sang API OCR
+            processCombinedOCR(blob);
+        }
+        
+        // Sửa lại captureBtn event để gọi handleCropAndOCR
+        captureBtn.addEventListener('click', () => {
+            if (!img || !uploadedFilename || !uploadedFileHex) {
+                resultDiv.innerHTML = '<span style="color:#ef4444;font-size:16px;">Chưa có ảnh để cắt!</span>';
+                return;
+            }
+            // --- HIỆU ỨNG LOADING KẾT QUẢ OCR ---
+            const ocrContainer = document.getElementById('ocrResultsContainer');
+            if (ocrContainer) {
+                ocrContainer.innerHTML = `
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:180px;">
+                    <div class="ocr-loading-spinner"></div>
+                    <div style="margin-top:12px;color:#2563eb;font-size:17px;font-weight:500;">Đang nhận diện OCR...</div>
+                </div>
+                <style>
+                .ocr-loading-spinner {
+                    border: 5px solid #e0e7ef;
+                    border-top: 5px solid #2563eb;
+                    border-radius: 50%;
+                    width: 44px;
+                    height: 44px;
+                    animation: ocr-spin 1s linear infinite;
+                }
+                @keyframes ocr-spin {
+                    0% { transform: rotate(0deg);}
+                    100% { transform: rotate(360deg);}
+                }
+                </style>
+                `;
+            }
+            fetch('/crop', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    filename: uploadedFilename,
+                    filedata: uploadedFileHex,
+                    roi: {
+                        x: roi.x,
+                        y: roi.y,
+                        w: roi.w,
+                        h: roi.h
+                    },
+                    scale: scale
+                })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    res.json().then(data => {
+                        resultDiv.innerHTML = `<span style="color:#ef4444;font-size:16px;">Crop lỗi: ${data.error}</span>`;
+                    });
+                    return;
+                }
+                return res.blob();
+            })
+            .then(blob => {
+                if (!blob) return;
+                handleCropAndOCR(blob);
+            });
+        });
+        
+        // Thêm biến lưu dictionary
+        let dictionary = [];
+        
+        // Xử lý nút fetch dictionary
+        document.getElementById('fetch-dict-btn').addEventListener('click', async function () {
+            const statusDiv = document.getElementById('dict-status');
+            statusDiv.textContent = 'Đang fetch dictionary...';
+            try {
+                // Gửi request lấy dictionary từ backend
+                const res = await fetch('/fetch-dictionary');
+                if (!res.ok) throw new Error('Không thể fetch dictionary từ server');
+                const data = await res.json();
+                if (!Array.isArray(data.dictionary)) throw new Error('Dữ liệu dictionary không hợp lệ');
+                dictionary = data.dictionary;
+                statusDiv.textContent = `Đã fetch ${dictionary.length} giá trị dictionary.`;
+                console.log('Dictionary fetched, length:', dictionary.length);
+            } catch (err) {
+                statusDiv.textContent = 'Lỗi: ' + err.message;
+            }
+        });
+        
+        // Hàm kiểm tra dictionary trước khi thao tác
+        function ensureDictionaryReady() {
+            if (!dictionary || dictionary.length === 0) {
+                document.getElementById('dict-status').textContent = 'Hãy fetch dictionary trước!';
+                return false;
+            }
+            return true;
+        }
+        
+        // Ví dụ: sử dụng ensureDictionaryReady() trước khi thao tác với dictionary
+        // if (!ensureDictionaryReady()) return;
+        
+        // Initial draw
+        draw();
+        
+        // Fetch dictionary on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('fetch-dict-btn').click();
+        });
+    </script>
+</body>
+
+</html>
+
+<!-- This error is from the browser when a resource (such as an image, API endpoint, or static file) is not found on the server. 
+It is not caused by the HTML/CSS/JS code structure itself. 
+To resolve:
+- Check the browser console for the exact URL that is 404.
+- Make sure your backend server is running and serving the required endpoints (e.g. /upload, /crop, /fetch-dictionary, /roi, or the OCR API).
+- If you are testing locally, ensure the backend and frontend are on the correct ports and CORS is handled if needed.
+- If the missing resource is a static file (image, JS, CSS), check the file path and server static file configuration.
+No code change is needed in this HTML file for this error. -->
